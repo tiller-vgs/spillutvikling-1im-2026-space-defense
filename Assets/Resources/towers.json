@@ -1,0 +1,84 @@
+{
+    "towers": [
+        {
+            "id": "laser",
+            "name": "Laser Turret",
+            "damage": 12,
+            "range": 3.0,
+            "fireRate": 1.0,
+            "cost": 50,
+            "upgradeCost": 40,
+            "upgradeDamage": 6,
+            "color": {
+                "r": 0.2,
+                "g": 0.6,
+                "b": 1.0
+            },
+            "description": "Fast firing laser"
+        },
+        {
+            "id": "cannon",
+            "name": "Plasma Cannon",
+            "damage": 35,
+            "range": 2.5,
+            "fireRate": 0.4,
+            "cost": 100,
+            "upgradeCost": 75,
+            "upgradeDamage": 15,
+            "color": {
+                "r": 1.0,
+                "g": 0.4,
+                "b": 0.1
+            },
+            "description": "Slow but powerful"
+        },
+        {
+            "id": "sniper",
+            "name": "Rail Gun",
+            "damage": 75,
+            "range": 5.0,
+            "fireRate": 0.25,
+            "cost": 150,
+            "upgradeCost": 100,
+            "upgradeDamage": 35,
+            "color": {
+                "r": 0.8,
+                "g": 0.2,
+                "b": 0.9
+            },
+            "description": "Long range, high dmg"
+        },
+        {
+            "id": "frost",
+            "name": "Cryo Blaster",
+            "damage": 8,
+            "range": 2.8,
+            "fireRate": 0.8,
+            "cost": 75,
+            "upgradeCost": 50,
+            "upgradeDamage": 4,
+            "color": {
+                "r": 0.4,
+                "g": 0.9,
+                "b": 1.0
+            },
+            "description": "Slows enemies"
+        },
+        {
+            "id": "missile",
+            "name": "Missile Array",
+            "damage": 50,
+            "range": 4.0,
+            "fireRate": 0.3,
+            "cost": 200,
+            "upgradeCost": 120,
+            "upgradeDamage": 25,
+            "color": {
+                "r": 1.0,
+                "g": 0.2,
+                "b": 0.2
+            },
+            "description": "Area damage rockets"
+        }
+    ]
+}

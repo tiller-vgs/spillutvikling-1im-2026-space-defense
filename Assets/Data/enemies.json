@@ -1,0 +1,31 @@
+{
+    "enemies": [
+        {
+            "id": "basic",
+            "name": "Scout Drone",
+            "health": 50,
+            "speed": 3.0,
+            "size": 0.4,
+            "color": { "r": 0.8, "g": 0.2, "b": 0.2 },
+            "reward": 10
+        },
+        {
+            "id": "fast",
+            "name": "Interceptor",
+            "health": 30,
+            "speed": 5.5,
+            "size": 0.3,
+            "color": { "r": 1.0, "g": 0.8, "b": 0.1 },
+            "reward": 15
+        },
+        {
+            "id": "tank",
+            "name": "Heavy Cruiser",
+            "health": 150,
+            "speed": 1.5,
+            "size": 0.6,
+            "color": { "r": 0.4, "g": 0.4, "b": 0.9 },
+            "reward": 25
+        }
+    ]
+}
