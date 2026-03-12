@@ -1,22 +1,46 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 
 public class GameInitializer : MonoBehaviour
 {
-    // This runs automatically when any scene loads
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Init()
-    {
-        // If there's already a GameInitializer, don't double init
-        if (Object.FindFirstObjectByType<GameInitializer>() != null) return;
+    private static bool isRegistered = false;
 
-        GameObject initObj = new GameObject("GameInitializer");
-        initObj.AddComponent<GameInitializer>();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void RegisterSceneCallback()
+    {
+        if (isRegistered) return;
+        isRegistered = true;
+
+        SceneManager.sceneLoaded += (scene, mode) => {
+            GameObject initObj = new GameObject("GameInitializer");
+            initObj.AddComponent<GameInitializer>().DoInit();
+        };
     }
 
     void Awake()
     {
+        // Empty Awake. If the user placed GameInitializer in the scene manually, 
+        // it won't do anything, preventing double-initialization.
+    }
+
+    public void DoInit()
+    {
+        // The user likely saved the scene during Play Mode, baking "roundActive=true" and old enemy spawners into the .unity file.
+        // We must brutally purge all remnants from the default loaded scene before dynamically building ours, 
+        // to prevent phantom enemies from spawning exactly where the last Editor test left off.
+        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas" };
+        foreach (string objName in oldObjects)
+        {
+            GameObject old = GameObject.Find(objName);
+            if (old != null) DestroyImmediate(old); // Immediate eliminates them before this frame's Awake/Start can run!
+        }
+        
+        // Also purge any stray enemies or towers saved in the scene
+        foreach (var enemy in Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None)) DestroyImmediate(enemy.gameObject);
+        foreach (var tower in Object.FindObjectsByType<Tower>(FindObjectsSortMode.None)) DestroyImmediate(tower.gameObject);
+
         SetupCamera();
         CreateBackground();
         CreateStars();
@@ -26,8 +50,6 @@ public class GameInitializer : MonoBehaviour
         SetupSpawner();
         SetupDatabase();
         SetupUI();
-
-        Debug.Log("Space Defense initialized at runtime!");
     }
 
     void SetupCamera()
@@ -41,8 +63,6 @@ public class GameInitializer : MonoBehaviour
 
     void CreateBackground()
     {
-        if (GameObject.Find("Background") != null) return;
-
         GameObject bg = GameObject.CreatePrimitive(PrimitiveType.Quad);
         bg.name = "Background";
         bg.transform.position = new Vector3(0, 0, 5);
@@ -56,8 +76,6 @@ public class GameInitializer : MonoBehaviour
 
     void CreateStars()
     {
-        if (GameObject.Find("Stars") != null) return;
-
         GameObject starsParent = new GameObject("Stars");
 
         for (int i = 0; i < 80; i++)
@@ -90,8 +108,6 @@ public class GameInitializer : MonoBehaviour
 
     void CreateNebulas()
     {
-        if (GameObject.Find("Nebulas") != null) return;
-
         GameObject nebParent = new GameObject("Nebulas");
 
         Color[] nebColors = new Color[]
@@ -127,8 +143,6 @@ public class GameInitializer : MonoBehaviour
 
     void CreatePath()
     {
-        if (GameObject.Find("EnemyPath") != null) return;
-
         Vector3[] positions = new Vector3[]
         {
             new Vector3(-9.5f, 4.5f, 0),
@@ -220,7 +234,6 @@ public class GameInitializer : MonoBehaviour
     {
         GameObject pathObj = GameObject.Find("EnemyPath");
         if (pathObj == null) return;
-        if (pathObj.transform.Find("PathParticles") != null) return;
 
         GameObject particleObj = new GameObject("PathParticles");
         particleObj.transform.parent = pathObj.transform;
@@ -268,8 +281,6 @@ public class GameInitializer : MonoBehaviour
 
     void SetupSpawner()
     {
-        if (Object.FindFirstObjectByType<EnemySpawner>() != null) return;
-
         GameObject spawnerObj = new GameObject("EnemySpawner");
         EnemySpawner spawner = spawnerObj.AddComponent<EnemySpawner>();
 
@@ -280,27 +291,14 @@ public class GameInitializer : MonoBehaviour
 
     void SetupDatabase()
     {
-        if (Object.FindFirstObjectByType<EnemyDatabase>() == null)
-        {
-            GameObject dbObj = new GameObject("GameManager");
-            dbObj.AddComponent<EnemyDatabase>();
-            dbObj.AddComponent<TowerDatabase>();
-            dbObj.AddComponent<PlayerHealth>();
-        }
-        else
-        {
-            GameObject dbObj = Object.FindFirstObjectByType<EnemyDatabase>().gameObject;
-            if (dbObj.GetComponent<TowerDatabase>() == null)
-                dbObj.AddComponent<TowerDatabase>();
-            if (dbObj.GetComponent<PlayerHealth>() == null)
-                dbObj.AddComponent<PlayerHealth>();
-        }
+        GameObject dbObj = new GameObject("GameManager");
+        dbObj.AddComponent<EnemyDatabase>();
+        dbObj.AddComponent<TowerDatabase>();
+        dbObj.AddComponent<PlayerHealth>();
     }
 
     void SetupUI()
     {
-        if (Object.FindFirstObjectByType<MainMenu>() != null) return;
-
         GameObject uiObj = new GameObject("UIManager");
         uiObj.AddComponent<MainMenu>();
         uiObj.AddComponent<GameOverUI>();
@@ -312,12 +310,9 @@ public class GameInitializer : MonoBehaviour
         uiObj.AddComponent<RoundManager>();
 
         // EventSystem for button clicks
-        if (Object.FindFirstObjectByType<EventSystem>() == null)
-        {
-            GameObject eventSystem = new GameObject("EventSystem");
-            eventSystem.AddComponent<EventSystem>();
-            eventSystem.AddComponent<InputSystemUIInputModule>();
-        }
+        GameObject eventSystem = new GameObject("EventSystem");
+        eventSystem.AddComponent<EventSystem>();
+        eventSystem.AddComponent<InputSystemUIInputModule>();
     }
 
     void KillCollider(GameObject obj)

@@ -3,12 +3,12 @@
         {
             "id": "laser",
             "name": "Laser Turret",
-            "damage": 12,
-            "range": 3.0,
-            "fireRate": 1.0,
+            "damage": 18,
+            "range": 3.2,
+            "fireRate": 1.2,
             "cost": 50,
             "upgradeCost": 40,
-            "upgradeDamage": 6,
+            "upgradeDamage": 10,
             "color": {
                 "r": 0.2,
                 "g": 0.6,
@@ -57,6 +57,8 @@
             "cost": 75,
             "upgradeCost": 50,
             "upgradeDamage": 4,
+            "slowAmount": 0.3,
+            "upgradeSlowAmount": 0.1,
             "color": {
                 "r": 0.4,
                 "g": 0.9,
@@ -67,12 +69,12 @@
         {
             "id": "missile",
             "name": "Missile Array",
-            "damage": 50,
+            "damage": 65,
             "range": 4.0,
-            "fireRate": 0.3,
-            "cost": 200,
-            "upgradeCost": 120,
-            "upgradeDamage": 25,
+            "fireRate": 0.5,
+            "cost": 350,
+            "upgradeCost": 180,
+            "upgradeDamage": 30,
             "color": {
                 "r": 1.0,
                 "g": 0.2,

@@ -64,6 +64,10 @@ public class GameOverUI : MonoBehaviour
     void ExitToMenu()
     {
         Time.timeScale = 1;
+        foreach (var vp in Object.FindObjectsByType<UnityEngine.Video.VideoPlayer>(FindObjectsSortMode.None))
+        {
+            vp.Stop();
+        }
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }

@@ -47,6 +47,7 @@ public class TowerUpgrader : MonoBehaviour
 
     void ShowUpgradePanel()
     {
+        if (tower != null) tower.SetRangeVisible(true);
         activePanel = this;
         justOpened = true;
 
@@ -171,6 +172,7 @@ public class TowerUpgrader : MonoBehaviour
 
     void HidePanel()
     {
+        if (tower != null) tower.SetRangeVisible(false);
         if (upgradePanel != null)
             Destroy(upgradePanel);
         upgradePanel = null;

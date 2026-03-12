@@ -10,7 +10,6 @@ public class RoundManager : MonoBehaviour
     public bool autoStart = false;
     public bool roundActive = false;
 
-    private int enemiesAlive = 0;
     private int enemiesSpawned = 0;
     private int enemiesToSpawn = 0;
     private float spawnTimer = 0;
@@ -110,7 +109,7 @@ public class RoundManager : MonoBehaviour
         announcerObj.transform.SetParent(canvasObj.transform, false);
         announcerGroup = announcerObj.AddComponent<CanvasGroup>();
         announcerGroup.alpha = 0;
-        var announcerRect = announcerObj.GetComponent<RectTransform>();
+        var announcerRect = announcerObj.AddComponent<RectTransform>();
         announcerRect.anchorMin = new Vector2(0.5f, 0.5f);
         announcerRect.anchorMax = new Vector2(0.5f, 0.5f);
         announcerRect.sizeDelta = new Vector2(600, 120);
@@ -118,6 +117,8 @@ public class RoundManager : MonoBehaviour
 
         GameObject announcerTextObj = new GameObject("AnnouncerText");
         announcerTextObj.transform.SetParent(announcerObj.transform, false);
+        var atRect = announcerTextObj.AddComponent<RectTransform>(); // Fix: Add RectTransform
+        
         roundAnnouncerText = announcerTextObj.AddComponent<Text>();
         roundAnnouncerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         roundAnnouncerText.fontSize = 72;
@@ -125,7 +126,7 @@ public class RoundManager : MonoBehaviour
         roundAnnouncerText.color = new Color(0.3f, 0.8f, 1f);
         roundAnnouncerText.alignment = TextAnchor.MiddleCenter;
         roundAnnouncerText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        var atRect = announcerTextObj.GetComponent<RectTransform>();
+        
         atRect.anchorMin = Vector2.zero;
         atRect.anchorMax = Vector2.one;
         atRect.offsetMin = Vector2.zero;
@@ -143,7 +144,7 @@ public class RoundManager : MonoBehaviour
 
         // calculate enemies for this round
         enemiesToSpawn = GetEnemyCount(currentRound);
-        enemiesAlive = 0;
+        enemiesToSpawn = GetEnemyCount(currentRound);
 
         roundText.text = "ROUND " + currentRound;
         startButton.SetActive(false);
@@ -153,8 +154,8 @@ public class RoundManager : MonoBehaviour
 
     int GetEnemyCount(int round)
     {
-        // starts at 5, grows each round
-        return 5 + (round - 1) * 3;
+        // starts at 6, grows faster
+        return 6 + (round - 1) * 4;
     }
 
     string GetEnemyTypeForSpawn(int round, int index)
@@ -219,14 +220,16 @@ public class RoundManager : MonoBehaviour
 
     float GetHealthMultiplier(int round)
     {
-        // enemies get +15% health per round
-        return 1f + (round - 1) * 0.15f;
+        // enemies get +22% health per round instead of 15%
+        return 1f + (round - 1) * 0.22f;
     }
 
     int GetRewardMultiplier(int round)
     {
-        // more money for harder rounds
-        return 1 + (round - 1) / 3;
+        // R1-15: 1x, R16-30: 2x, R31+: 3x
+        if (round <= 15) return 1;
+        if (round <= 30) return 2;
+        return 3;
     }
 
     void Update()
@@ -276,7 +279,20 @@ public class RoundManager : MonoBehaviour
         roundActive = false;
 
         // bonus money for completing a round
-        int bonus = 20 + currentRound * 5;
+        int bonus = 0;
+        if (currentRound <= 12)
+        {
+            bonus = 10 + currentRound * 2;
+        }
+        else
+        {
+            // After round 12, the bonus only increases by $1 per round
+            bonus = 34 + (currentRound - 12);
+        }
+        
+        // Final cap to stop infinite money growth
+        bonus = Mathf.Min(bonus, 45);
+        
         if (CurrencyManager.instance != null)
             CurrencyManager.instance.AddMoney(bonus);
 
@@ -292,29 +308,31 @@ public class RoundManager : MonoBehaviour
 
     IEnumerator ShowRoundAnnouncement(string text)
     {
+        if (roundAnnouncerText == null || announcerGroup == null) yield break;
         roundAnnouncerText.text = text;
 
-        // fade in
         float t = 0;
         while (t < 0.3f)
         {
+            if (announcerGroup == null) yield break;
             t += Time.deltaTime;
             announcerGroup.alpha = t / 0.3f;
             yield return null;
         }
+        if (announcerGroup == null) yield break;
         announcerGroup.alpha = 1;
 
-        // hold
         yield return new WaitForSeconds(1.0f);
 
-        // fade out
         t = 0;
         while (t < 0.8f)
         {
+            if (announcerGroup == null) yield break;
             t += Time.deltaTime;
             announcerGroup.alpha = 1f - (t / 0.8f);
             yield return null;
         }
+        if (announcerGroup == null) yield break;
         announcerGroup.alpha = 0;
     }
 }

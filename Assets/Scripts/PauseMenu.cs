@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.Video;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -18,8 +19,8 @@ public class PauseMenu : MonoBehaviour
 
     void BuildUI()
     {
-        GameObject canvasObj = new GameObject("PauseCanvas");
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        var canvasObj = new GameObject("PauseCanvas");
+        var canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 150;
         var scaler = canvasObj.AddComponent<CanvasScaler>();
@@ -27,11 +28,20 @@ public class PauseMenu : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        // Pause button (top right)
         pauseButton = new GameObject("PauseBtn");
         pauseButton.transform.SetParent(canvasObj.transform, false);
-        var btnImg = pauseButton.AddComponent<Image>();
-        btnImg.color = new Color(0.15f, 0.15f, 0.25f, 0.8f);
+        pauseButton.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
+
+        var btnInner = new GameObject("Inner");
+        btnInner.transform.SetParent(pauseButton.transform, false);
+        var btnInnerImg = btnInner.AddComponent<Image>();
+        btnInnerImg.color = new Color(0.0f, 0.5f, 0.65f, 0.9f);
+        var btnInnerRect = btnInner.GetComponent<RectTransform>();
+        btnInnerRect.anchorMin = Vector2.zero;
+        btnInnerRect.anchorMax = Vector2.one;
+        btnInnerRect.offsetMin = new Vector2(3, 3);
+        btnInnerRect.offsetMax = new Vector2(-3, -3);
+
         var btnRect = pauseButton.GetComponent<RectTransform>();
         btnRect.anchorMin = new Vector2(1, 1);
         btnRect.anchorMax = new Vector2(1, 1);
@@ -40,15 +50,16 @@ public class PauseMenu : MonoBehaviour
         btnRect.sizeDelta = new Vector2(50, 50);
 
         var btn = pauseButton.AddComponent<Button>();
+        btn.targetGraphic = btnInnerImg;
         var colors = btn.colors;
-        colors.highlightedColor = new Color(0.25f, 0.25f, 0.4f, 0.9f);
-        colors.pressedColor = new Color(0.1f, 0.1f, 0.2f, 0.9f);
+        colors.highlightedColor = new Color(0.0f, 0.65f, 0.8f);
+        colors.pressedColor = new Color(0.0f, 0.35f, 0.5f);
         btn.colors = colors;
         btn.onClick.AddListener(() => TogglePause());
 
-        GameObject pauseIcon = new GameObject("PauseIcon");
-        pauseIcon.transform.SetParent(pauseButton.transform, false);
-        Text iconText = pauseIcon.AddComponent<Text>();
+        var pauseIcon = new GameObject("PauseIcon");
+        pauseIcon.transform.SetParent(btnInner.transform, false);
+        var iconText = pauseIcon.AddComponent<Text>();
         iconText.text = "II";
         iconText.fontSize = 28;
         iconText.color = Color.white;
@@ -61,11 +72,9 @@ public class PauseMenu : MonoBehaviour
         iconRect.offsetMin = Vector2.zero;
         iconRect.offsetMax = Vector2.zero;
 
-        // Pause panel (fullscreen overlay)
         pausePanel = new GameObject("PausePanel");
         pausePanel.transform.SetParent(canvasObj.transform, false);
-        var panelImg = pausePanel.AddComponent<Image>();
-        panelImg.color = new Color(0.02f, 0.01f, 0.06f, 0.85f);
+        pausePanel.AddComponent<Image>().color = new Color(0.01f, 0.05f, 0.08f, 0.88f);
         var panelRect = pausePanel.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
         panelRect.anchorMax = Vector2.one;
@@ -73,18 +82,17 @@ public class PauseMenu : MonoBehaviour
         panelRect.offsetMax = Vector2.zero;
 
         CreateText(pausePanel.transform, "PAUSED", 56,
-            new Vector2(0.5f, 0.7f), new Color(0.3f, 0.7f, 1f));
+            new Vector2(0.5f, 0.72f), new Color(0.0f, 0.85f, 0.9f));
 
         CreateButton(pausePanel.transform, "RESUME", new Vector2(0.5f, 0.55f),
-            new Vector2(260, 55), new Color(0.1f, 0.5f, 0.2f), () => Resume());
+            new Vector2(300, 60), new Color(0.1f, 0.75f, 0.4f), () => Resume());
 
         CreateButton(pausePanel.transform, "SETTINGS", new Vector2(0.5f, 0.43f),
-            new Vector2(260, 55), new Color(0.2f, 0.2f, 0.5f), () => OpenSettings());
+            new Vector2(300, 60), new Color(0.0f, 0.65f, 0.8f), () => OpenSettings());
 
         CreateButton(pausePanel.transform, "EXIT TO MENU", new Vector2(0.5f, 0.31f),
-            new Vector2(260, 55), new Color(0.4f, 0.15f, 0.15f), () => ExitToMenu());
+            new Vector2(300, 60), new Color(0.1f, 0.35f, 0.5f), () => ExitToMenu());
 
-        // Settings panel (within pause)
         BuildSettingsPanel(canvasObj.transform);
     }
 
@@ -92,8 +100,7 @@ public class PauseMenu : MonoBehaviour
     {
         settingsPanel = new GameObject("PauseSettingsPanel");
         settingsPanel.transform.SetParent(parent, false);
-        var panelImg = settingsPanel.AddComponent<Image>();
-        panelImg.color = new Color(0.03f, 0.02f, 0.08f, 0.95f);
+        settingsPanel.AddComponent<Image>().color = new Color(0.01f, 0.04f, 0.08f, 0.95f);
         var panelRect = settingsPanel.GetComponent<RectTransform>();
         panelRect.anchorMin = Vector2.zero;
         panelRect.anchorMax = Vector2.one;
@@ -101,78 +108,146 @@ public class PauseMenu : MonoBehaviour
         panelRect.offsetMax = Vector2.zero;
 
         CreateText(settingsPanel.transform, "SETTINGS", 48,
-            new Vector2(0.5f, 0.82f), new Color(0.3f, 0.7f, 1f));
+            new Vector2(0.5f, 0.85f), new Color(0.0f, 0.85f, 0.9f));
 
-        // Auto-start rounds toggle
         CreateText(settingsPanel.transform, "Auto-Start Rounds", 22,
-            new Vector2(0.35f, 0.62f), Color.white);
+            new Vector2(0.35f, 0.72f), Color.white);
+        CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.71f),
+            RoundManager.instance != null && RoundManager.instance.autoStart,
+            (val) => { if (RoundManager.instance != null) RoundManager.instance.autoStart = val; });
 
-        GameObject autoToggleObj = new GameObject("AutoStartToggle");
-        autoToggleObj.transform.SetParent(settingsPanel.transform, false);
-        var autoToggleRect = autoToggleObj.AddComponent<RectTransform>();
-        autoToggleRect.anchorMin = new Vector2(0.6f, 0.61f);
-        autoToggleRect.anchorMax = new Vector2(0.6f, 0.63f);
-        autoToggleRect.sizeDelta = new Vector2(40, 40);
-
-        var autoToggleBg = autoToggleObj.AddComponent<Image>();
-        autoToggleBg.color = new Color(0.2f, 0.2f, 0.3f);
-
-        var autoToggle = autoToggleObj.AddComponent<Toggle>();
-        bool currentAutoStart = RoundManager.instance != null && RoundManager.instance.autoStart;
-        autoToggle.isOn = currentAutoStart;
-
-        GameObject autoCheckObj = new GameObject("Checkmark");
-        autoCheckObj.transform.SetParent(autoToggleObj.transform, false);
-        var autoCheckImg = autoCheckObj.AddComponent<Image>();
-        autoCheckImg.color = new Color(0.3f, 0.9f, 0.4f);
-        var autoCheckRect = autoCheckObj.GetComponent<RectTransform>();
-        autoCheckRect.anchorMin = new Vector2(0.15f, 0.15f);
-        autoCheckRect.anchorMax = new Vector2(0.85f, 0.85f);
-        autoCheckRect.offsetMin = Vector2.zero;
-        autoCheckRect.offsetMax = Vector2.zero;
-        autoToggle.graphic = autoCheckImg;
-
-        autoToggle.onValueChanged.AddListener((val) => {
-            if (RoundManager.instance != null)
-                RoundManager.instance.autoStart = val;
-        });
-
-        // FPS counter toggle
         CreateText(settingsPanel.transform, "FPS Counter", 22,
-            new Vector2(0.35f, 0.50f), Color.white);
+            new Vector2(0.35f, 0.62f), Color.white);
+        CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.61f),
+            SettingsManager.fpsCounterOn,
+            (val) => {
+                SettingsManager.fpsCounterOn = val;
+                SettingsManager.Save();
+                if (FPSCounter.instance != null) FPSCounter.instance.Toggle(val);
+            });
 
-        GameObject fpsToggleObj = new GameObject("FPSToggle");
-        fpsToggleObj.transform.SetParent(settingsPanel.transform, false);
-        var fpsToggleRect = fpsToggleObj.AddComponent<RectTransform>();
-        fpsToggleRect.anchorMin = new Vector2(0.6f, 0.49f);
-        fpsToggleRect.anchorMax = new Vector2(0.6f, 0.51f);
-        fpsToggleRect.sizeDelta = new Vector2(40, 40);
+        CreateText(settingsPanel.transform, "Cap FPS", 22,
+            new Vector2(0.35f, 0.52f), Color.white);
+        Toggle capToggle = CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.51f),
+            SettingsManager.fpsCapped, null);
 
-        var fpsToggleBg = fpsToggleObj.AddComponent<Image>();
-        fpsToggleBg.color = new Color(0.2f, 0.2f, 0.3f);
+        CreateText(settingsPanel.transform, "FPS Limit", 22,
+            new Vector2(0.35f, 0.42f), Color.white);
 
-        var fpsToggle = fpsToggleObj.AddComponent<Toggle>();
-        fpsToggle.isOn = false;
+        var capValObj = CreateText(settingsPanel.transform, SettingsManager.fpsCap + " FPS", 22,
+            new Vector2(0.72f, 0.42f), new Color(0.1f, 0.9f, 0.5f));
+        var capValueText = capValObj.GetComponent<Text>();
 
-        GameObject fpsCheckObj = new GameObject("Checkmark");
-        fpsCheckObj.transform.SetParent(fpsToggleObj.transform, false);
-        var fpsCheckImg = fpsCheckObj.AddComponent<Image>();
-        fpsCheckImg.color = new Color(0.3f, 0.9f, 0.4f);
-        var fpsCheckRect = fpsCheckObj.GetComponent<RectTransform>();
-        fpsCheckRect.anchorMin = new Vector2(0.15f, 0.15f);
-        fpsCheckRect.anchorMax = new Vector2(0.85f, 0.85f);
-        fpsCheckRect.offsetMin = Vector2.zero;
-        fpsCheckRect.offsetMax = Vector2.zero;
-        fpsToggle.graphic = fpsCheckImg;
+        var sliderObj = new GameObject("FPSSlider");
+        sliderObj.transform.SetParent(settingsPanel.transform, false);
+        var sliderRect = sliderObj.AddComponent<RectTransform>();
+        sliderRect.anchorMin = new Vector2(0.3f, 0.35f);
+        sliderRect.anchorMax = new Vector2(0.7f, 0.37f);
+        sliderRect.offsetMin = Vector2.zero;
+        sliderRect.offsetMax = Vector2.zero;
+        sliderObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
 
-        fpsToggle.onValueChanged.AddListener((val) => {
-            if (FPSCounter.instance != null)
-                FPSCounter.instance.Toggle(val);
+        var fillArea = new GameObject("Fill Area");
+        fillArea.transform.SetParent(sliderObj.transform, false);
+        var fillAreaRect = fillArea.AddComponent<RectTransform>();
+        fillAreaRect.anchorMin = Vector2.zero;
+        fillAreaRect.anchorMax = Vector2.one;
+        fillAreaRect.offsetMin = Vector2.zero;
+        fillAreaRect.offsetMax = Vector2.zero;
+
+        var fill = new GameObject("Fill");
+        fill.transform.SetParent(fillArea.transform, false);
+        fill.AddComponent<Image>().color = new Color(0.0f, 0.65f, 0.8f);
+        var fillR = fill.GetComponent<RectTransform>();
+        fillR.anchorMin = Vector2.zero;
+        fillR.anchorMax = Vector2.one;
+        fillR.offsetMin = Vector2.zero;
+        fillR.offsetMax = Vector2.zero;
+
+        var handleArea = new GameObject("Handle Slide Area");
+        handleArea.transform.SetParent(sliderObj.transform, false);
+        var handleAreaRect = handleArea.AddComponent<RectTransform>();
+        handleAreaRect.anchorMin = Vector2.zero;
+        handleAreaRect.anchorMax = Vector2.one;
+        handleAreaRect.offsetMin = new Vector2(10, 0);
+        handleAreaRect.offsetMax = new Vector2(-10, 0);
+
+        var handle = new GameObject("Handle");
+        handle.transform.SetParent(handleArea.transform, false);
+        handle.AddComponent<Image>().color = new Color(0.1f, 0.9f, 0.5f);
+        var handleRect = handle.GetComponent<RectTransform>();
+        handleRect.anchorMin = new Vector2(0, 0);
+        handleRect.anchorMax = new Vector2(0, 1);
+        handleRect.sizeDelta = new Vector2(20, 0);
+
+        var slider = sliderObj.AddComponent<Slider>();
+        slider.fillRect = fillR;
+        slider.handleRect = handleRect;
+        slider.minValue = 15;
+        slider.maxValue = 240;
+        slider.wholeNumbers = true;
+        slider.value = SettingsManager.fpsCap;
+        slider.interactable = SettingsManager.fpsCapped;
+
+        Text localCapText = capValueText;
+        Slider localSlider = slider;
+
+        slider.onValueChanged.AddListener((val) => {
+            SettingsManager.fpsCap = (int)val;
+            if (localCapText != null) localCapText.text = SettingsManager.fpsCap + " FPS";
+            SettingsManager.ApplyFPS();
         });
 
-        // Back button
-        CreateButton(settingsPanel.transform, "BACK", new Vector2(0.5f, 0.25f),
-            new Vector2(200, 50), new Color(0.4f, 0.15f, 0.15f), () => CloseSettings());
+        capToggle.onValueChanged.AddListener((val) => {
+            SettingsManager.fpsCapped = val;
+            SettingsManager.ApplyFPS();
+            localSlider.interactable = val;
+        });
+
+        CreateButton(settingsPanel.transform, "BACK", new Vector2(0.5f, 0.2f),
+            new Vector2(240, 55), new Color(0.1f, 0.35f, 0.5f), () => CloseSettings());
+    }
+
+    Toggle CreateToggle(Transform parent, Vector2 anchor, bool defaultVal,
+        UnityEngine.Events.UnityAction<bool> onChange)
+    {
+        var toggleObj = new GameObject("Toggle");
+        toggleObj.transform.SetParent(parent, false);
+        toggleObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
+
+        var toggleRect = toggleObj.GetComponent<RectTransform>();
+        toggleRect.anchorMin = anchor;
+        toggleRect.anchorMax = new Vector2(anchor.x, anchor.y + 0.02f);
+        toggleRect.sizeDelta = new Vector2(44, 44);
+
+        var innerBg = new GameObject("InnerBg");
+        innerBg.transform.SetParent(toggleObj.transform, false);
+        innerBg.AddComponent<Image>().color = new Color(0.05f, 0.2f, 0.3f);
+        var innerBgRect = innerBg.GetComponent<RectTransform>();
+        innerBgRect.anchorMin = Vector2.zero;
+        innerBgRect.anchorMax = Vector2.one;
+        innerBgRect.offsetMin = new Vector2(3, 3);
+        innerBgRect.offsetMax = new Vector2(-3, -3);
+
+        var toggle = toggleObj.AddComponent<Toggle>();
+
+        var checkObj = new GameObject("Checkmark");
+        checkObj.transform.SetParent(innerBg.transform, false);
+        var checkImg = checkObj.AddComponent<Image>();
+        checkImg.color = new Color(0.1f, 0.9f, 0.5f);
+        var checkRect = checkObj.GetComponent<RectTransform>();
+        checkRect.anchorMin = new Vector2(0.2f, 0.2f);
+        checkRect.anchorMax = new Vector2(0.8f, 0.8f);
+        checkRect.offsetMin = Vector2.zero;
+        checkRect.offsetMax = Vector2.zero;
+
+        toggle.graphic = checkImg;
+        toggle.isOn = defaultVal;
+
+        if (onChange != null)
+            toggle.onValueChanged.AddListener(onChange);
+
+        return toggle;
     }
 
     void OpenSettings()
@@ -214,6 +289,10 @@ public class PauseMenu : MonoBehaviour
     void ExitToMenu()
     {
         Time.timeScale = 1;
+        foreach (var vp in Object.FindObjectsByType<VideoPlayer>(FindObjectsSortMode.None))
+        {
+            vp.Stop();
+        }
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
@@ -226,16 +305,17 @@ public class PauseMenu : MonoBehaviour
 
     GameObject CreateText(Transform parent, string content, int size, Vector2 anchor, Color color)
     {
-        GameObject obj = new GameObject("Text_" + content);
+        var obj = new GameObject("Text_" + content);
         obj.transform.SetParent(parent, false);
-        Text txt = obj.AddComponent<Text>();
+        var txt = obj.AddComponent<Text>();
         txt.text = content;
         txt.fontSize = size;
         txt.color = color;
         txt.alignment = TextAnchor.MiddleCenter;
         txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         txt.horizontalOverflow = HorizontalWrapMode.Overflow;
-        RectTransform rt = obj.GetComponent<RectTransform>();
+        txt.fontStyle = FontStyle.Bold;
+        var rt = obj.GetComponent<RectTransform>();
         rt.anchorMin = anchor;
         rt.anchorMax = anchor;
         rt.sizeDelta = new Vector2(500, 80);
@@ -246,32 +326,54 @@ public class PauseMenu : MonoBehaviour
     void CreateButton(Transform parent, string label, Vector2 anchor, Vector2 size, Color bgColor,
         UnityEngine.Events.UnityAction onClick)
     {
-        GameObject btnObj = new GameObject("Btn_" + label);
+        var btnObj = new GameObject("Btn_" + label);
         btnObj.transform.SetParent(parent, false);
-        var img = btnObj.AddComponent<Image>();
-        img.color = bgColor;
+
+        btnObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
+
+        var innerObj = new GameObject("Inner");
+        innerObj.transform.SetParent(btnObj.transform, false);
+        var innerImg = innerObj.AddComponent<Image>();
+        innerImg.color = bgColor;
+        var innerRect = innerObj.GetComponent<RectTransform>();
+        innerRect.anchorMin = Vector2.zero;
+        innerRect.anchorMax = Vector2.one;
+        innerRect.offsetMin = new Vector2(5, 5);
+        innerRect.offsetMax = new Vector2(-5, -5);
+
+        var highlightObj = new GameObject("Highlight");
+        highlightObj.transform.SetParent(innerObj.transform, false);
+        highlightObj.AddComponent<Image>().color = new Color(1f, 1f, 1f, 0.12f);
+        var highlightRect = highlightObj.GetComponent<RectTransform>();
+        highlightRect.anchorMin = new Vector2(0, 0.5f);
+        highlightRect.anchorMax = new Vector2(1, 1);
+        highlightRect.offsetMin = Vector2.zero;
+        highlightRect.offsetMax = Vector2.zero;
+
         var b = btnObj.AddComponent<Button>();
+        b.targetGraphic = innerImg;
         var c = b.colors;
         c.highlightedColor = bgColor * 1.3f;
-        c.pressedColor = bgColor * 0.7f;
+        c.pressedColor = bgColor * 0.6f;
         b.colors = c;
         b.onClick.AddListener(onClick);
 
-        RectTransform rt = btnObj.GetComponent<RectTransform>();
+        var rt = btnObj.GetComponent<RectTransform>();
         rt.anchorMin = anchor;
         rt.anchorMax = anchor;
         rt.sizeDelta = size;
         rt.anchoredPosition = Vector2.zero;
 
-        GameObject textObj = new GameObject("Label");
-        textObj.transform.SetParent(btnObj.transform, false);
-        Text txt = textObj.AddComponent<Text>();
+        var textObj = new GameObject("Label");
+        textObj.transform.SetParent(innerObj.transform, false);
+        var txt = textObj.AddComponent<Text>();
         txt.text = label;
-        txt.fontSize = 24;
+        txt.fontSize = 26;
         txt.color = Color.white;
         txt.alignment = TextAnchor.MiddleCenter;
         txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        RectTransform trt = textObj.GetComponent<RectTransform>();
+        txt.fontStyle = FontStyle.Bold;
+        var trt = textObj.GetComponent<RectTransform>();
         trt.anchorMin = Vector2.zero;
         trt.anchorMax = Vector2.one;
         trt.offsetMin = Vector2.zero;

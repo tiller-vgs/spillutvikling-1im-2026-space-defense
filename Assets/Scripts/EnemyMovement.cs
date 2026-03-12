@@ -11,6 +11,10 @@ public class EnemyMovement : MonoBehaviour
     private int currentWP = 0;
     private HealthBar healthBar;
     private SpriteRenderer sr;
+    private Animator animator;
+    private float slowFactor = 1f;
+    private float slowTimer = 0f;
+    private Color originalColor = Color.white;
 
     public void Setup(EnemyData data, Transform[] path)
     {
@@ -25,11 +29,25 @@ public class EnemyMovement : MonoBehaviour
         currentHealth = maxHealth;
         waypoints = path;
         transform.position = waypoints[0].position;
-        transform.localScale = Vector3.one * data.size;
+        // Multiply by 6 because Otter sprite is only 32 pixels wide (0.32 world units) and was generating microscopic enemies covered by health bars
+        transform.localScale = Vector3.one * data.size * 6f;
 
-        sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
+        sr = GetComponentInChildren<SpriteRenderer>();
+        // Only apply color tint if it's the fallback square (which starts white)
+        // If it has a sprite other than the default square, we leave it white to show its actual colors.
+        if (sr != null && sr.sprite != null && sr.sprite.name == "Square")
             sr.color = data.color.ToColor();
+
+        if (sr != null) originalColor = sr.color;
+
+        // Get the Animator from children
+        animator = GetComponentInChildren<Animator>();
+        if (animator != null)
+        {
+            // Assuming 3.0 is a "normal" base speed, we scale animation speed relatively.
+            // A speed of 6.0 will play the animation 2x as fast.
+            animator.speed = speed / 3f;
+        }
 
         healthBar = GetComponentInChildren<HealthBar>();
         if (healthBar != null)
@@ -53,12 +71,60 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
+    public void ApplySlow(float factor, float duration)
+    {
+        // factor is how much to REDUCE speed (e.g. 0.3 means 30% slower, so 0.7 speed)
+        float newSlowFactor = 1f - factor;
+        if (newSlowFactor < slowFactor)
+        {
+            slowFactor = newSlowFactor;
+            if (sr != null) sr.color = Color.cyan; // Visual feedback for slow
+        }
+        slowTimer = Mathf.Max(slowTimer, duration);
+    }
+
     void Update()
     {
         if (waypoints == null || currentWP >= waypoints.Length) return;
 
         Transform target = waypoints[currentWP];
-        transform.position = Vector3.MoveTowards(transform.position, target.position, speed * Time.deltaTime);
+        
+        // Calculate raw movement vector without offset
+        Vector3 dir = (target.position - transform.position).normalized;
+        dir.z = 0; // keep it 2D
+        
+        // Flip sprite based on horizontal direction
+        if (sr != null && Mathf.Abs(dir.x) > 0.01f)
+        {
+            // The default otter sprite faces left. So if we are moving right (positive x), flipX should be true
+            sr.flipX = dir.x > 0; 
+        }
+
+        // Move towards target
+        if (slowTimer > 0)
+        {
+            slowTimer -= Time.deltaTime;
+            if (slowTimer <= 0)
+            {
+                slowFactor = 1f;
+                if (sr != null) sr.color = originalColor;
+            }
+        }
+
+        transform.position = Vector3.MoveTowards(transform.position, target.position, speed * slowFactor * Time.deltaTime);
+
+        // Add a visual-only vertical offset so the sprite sits "on" the path instead of "in" it
+        // We do this by locally shifting the SpriteRenderer if it exists
+        if (sr != null && sr.transform == transform)
+        {
+            // We can't shift the root easily because it messes up waypoints, 
+            // but we can't shift a component. Since sr is on root, we must shift the root 
+            // but compensate waypoint distance checks, or better: just shift the visual child?
+            // Since the code structure is set up, a simpler way is to let the root follow the path exactly, 
+            // but offset the SpriteRenderer component? You can't offset a SpriteRenderer component without a child object.
+            // But wait, there is no separate child for the sprite in EnemySpawner. 
+            // Let's modify the target position temporarily in Update. No, that breaks movement.
+        }
 
         if (Vector3.Distance(transform.position, target.position) < 0.05f)
         {

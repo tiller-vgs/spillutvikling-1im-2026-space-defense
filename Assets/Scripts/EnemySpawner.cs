@@ -16,27 +16,61 @@ public class EnemySpawner : MonoBehaviour
 
         EnemyData data = EnemyDatabase.instance.GetEnemy(type);
 
-        // build the enemy from scratch
+        // build the enemy from scratch (root for movement)
         GameObject enemy = new GameObject(data.name);
 
-        // square sprite
-        var sr = enemy.AddComponent<SpriteRenderer>();
-        sr.sprite = MakeSquareSprite();
-        sr.color = data.color.ToColor();
+        // Visuals child (for sprite and animation offset)
+        GameObject visuals = new GameObject("Visuals");
+        visuals.transform.parent = enemy.transform;
+        
+        // Push the visuals up slightly so Otters stand "on" the path line
+        visuals.transform.localPosition = new Vector3(0, 0.1f, 0);
+
+        // Load sprite from Resources instead of making a square
+        var sr = visuals.AddComponent<SpriteRenderer>();
+        
+        // Unity Resources.Load automatically strips file extensions, but we must be exact about the name.
+        Sprite[] sprites = Resources.LoadAll<Sprite>("OterSheet");
+        Sprite enemySprite = null;
+        
+        if (sprites != null && sprites.Length > 0)
+        {
+            foreach (var s in sprites)
+            {
+                if (s.name == "Oter_0")
+                    enemySprite = s;
+            }
+            if (enemySprite == null) enemySprite = sprites[0];
+        }
+
+        if (enemySprite != null)
+        {
+            sr.sprite = enemySprite;
+        }
+        else
+        {
+            Debug.LogError("Failed to load Oter sprite! Sprites array was null or empty: " + (sprites == null ? "null" : sprites.Length.ToString()));
+            sr.sprite = MakeSquareSprite(); // fallback
+        }
+        var animator = visuals.AddComponent<Animator>();
+        RuntimeAnimatorController animCtrl = Resources.Load<RuntimeAnimatorController>("Oter_0");
+        if (animCtrl != null)
+        {
+            animator.runtimeAnimatorController = animCtrl;
+        }
+
+        // Set color only if it's the fallback square sprite to preserve the Otter's natural colors
+        if (enemySprite == null)
+        {
+            sr.color = data.color.ToColor();
+        }
+        else
+        {
+            sr.color = Color.white; // Ensure original spritesheet colors show unaltered
+        }
         sr.sortingOrder = 5;
 
-        // inner glow sprite
-        GameObject glow = new GameObject("InnerGlow");
-        glow.transform.parent = enemy.transform;
-        glow.transform.localPosition = Vector3.zero;
-        glow.transform.localScale = Vector3.one * 0.6f;
-        var glowSr = glow.AddComponent<SpriteRenderer>();
-        glowSr.sprite = MakeSquareSprite();
-        Color glowColor = data.color.ToColor();
-        glowColor = Color.Lerp(glowColor, Color.white, 0.5f);
-        glowColor.a = 0.6f;
-        glowSr.color = glowColor;
-        glowSr.sortingOrder = 6;
+        // inner glow sprite removed so it doesn't draw a box over the Otter
 
         // health bar above the enemy
         GameObject hbObj = new GameObject("HealthBar");
@@ -44,18 +78,7 @@ public class EnemySpawner : MonoBehaviour
         hbObj.transform.localPosition = new Vector3(0, 0.5f, 0);
         hbObj.AddComponent<HealthBar>();
 
-        // trail effect
-        var trail = enemy.AddComponent<TrailRenderer>();
-        trail.time = 0.3f;
-        trail.startWidth = data.size * 0.3f;
-        trail.endWidth = 0f;
-        trail.material = new Material(Shader.Find("Sprites/Default"));
-        Color trailColor = data.color.ToColor();
-        trailColor.a = 0.4f;
-        trail.startColor = trailColor;
-        trailColor.a = 0f;
-        trail.endColor = trailColor;
-        trail.sortingOrder = 4;
+        // trail effect removed to avoid square trails
 
         // movement script with scaled stats
         var movement = enemy.AddComponent<EnemyMovement>();

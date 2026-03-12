@@ -19,6 +19,8 @@ public class TowerData
     public int cost;
     public int upgradeCost;
     public int upgradeDamage;
+    public float slowAmount;
+    public float upgradeSlowAmount;
     public TowerColor color;
     public string description;
 }

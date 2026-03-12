@@ -8,6 +8,9 @@ public class Tower : MonoBehaviour
     public const int MAX_LEVEL = 5;
     private float fireTimer;
     private LineRenderer laserLine;
+    private AudioSource audioSource;
+    private AudioClip laserSound;
+    private GameObject rangeCircle;
 
     public void Setup(TowerData towerData)
     {
@@ -35,16 +38,17 @@ public class Tower : MonoBehaviour
         glowSr.sortingOrder = 9;
 
         // range circle
-        GameObject rangeObj = new GameObject("Range");
-        rangeObj.transform.parent = transform;
-        rangeObj.transform.localPosition = Vector3.zero;
-        var rangeSr = rangeObj.AddComponent<SpriteRenderer>();
+        rangeCircle = new GameObject("Range");
+        rangeCircle.transform.parent = transform;
+        rangeCircle.transform.localPosition = Vector3.zero;
+        var rangeSr = rangeCircle.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
         Color rc = data.color.ToColor();
         rc.a = 0.08f;
         rangeSr.color = rc;
         rangeSr.sortingOrder = 1;
-        rangeObj.transform.localScale = Vector3.one * data.range * 2f / 0.5f;
+        rangeCircle.transform.localScale = Vector3.one * data.range * 2f / 0.5f;
+        rangeCircle.SetActive(false); // Hide by default
 
         // laser line for shooting
         laserLine = gameObject.AddComponent<LineRenderer>();
@@ -57,6 +61,16 @@ public class Tower : MonoBehaviour
         laserLine.endColor = endC;
         laserLine.positionCount = 0;
         laserLine.sortingOrder = 7;
+
+        // Sound setup
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.volume = 0.005f; // almost silent volume
+        audioSource.pitch = 1.6f; // even faster
+        audioSource.spatialBlend = 0f; // 2D sound
+        
+        // This won't throw an error if the file isn't there yet, it will just return null
+        laserSound = Resources.Load<AudioClip>("Laserlyd");
     }
 
     void Update()
@@ -70,7 +84,20 @@ public class Tower : MonoBehaviour
             if (target != null)
             {
                 target.TakeDamage(data.damage + (level - 1) * data.upgradeDamage);
+                
+                if (data.slowAmount > 0)
+                {
+                    float currentSlow = data.slowAmount + (level - 1) * data.upgradeSlowAmount;
+                    target.ApplySlow(currentSlow, 0.5f); // 0.5s duration per hit
+                }
+
                 ShowLaser(target.transform.position);
+
+                if (laserSound != null && audioSource != null)
+                {
+                    audioSource.PlayOneShot(laserSound);
+                }
+
                 fireTimer = 0;
             }
         }
@@ -141,6 +168,12 @@ public class Tower : MonoBehaviour
             c = Color.Lerp(c, Color.white, 0.15f);
             sr.color = c;
         }
+    }
+
+    public void SetRangeVisible(bool visible)
+    {
+        if (rangeCircle != null)
+            rangeCircle.SetActive(visible);
     }
 
     public int GetUpgradeCost()
