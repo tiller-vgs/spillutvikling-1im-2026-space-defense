@@ -36,7 +36,7 @@ public class GameOverUI : MonoBehaviour
         CreateText(panel.transform, "YOU DIED", 72,
             new Vector2(0.5f, 0.65f), new Color(0.9f, 0.15f, 0.15f));
 
-        CreateText(panel.transform, "the aliens got through...", 24,
+        CreateText(panel.transform, "the otters got through...", 24,
             new Vector2(0.5f, 0.55f), new Color(0.6f, 0.3f, 0.3f));
 
         // restart

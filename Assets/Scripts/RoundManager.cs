@@ -188,7 +188,7 @@ public class RoundManager : MonoBehaviour
             return "basic";
         }
 
-        if (round <= 12)
+        if (round <= 8)
         {
             // heavy mix
             if (index % 4 == 0) return "tank";
@@ -198,7 +198,7 @@ public class RoundManager : MonoBehaviour
             return "basic";
         }
 
-        // round 13+: chaos mode, lots of everything
+        // round 9+: chaos mode, lots of everything
         int type = index % 6;
         switch (type)
         {
@@ -284,14 +284,18 @@ public class RoundManager : MonoBehaviour
         {
             bonus = 10 + currentRound * 2;
         }
-        else
+        else if (currentRound <= 18)
         {
-            // After round 12, the bonus only increases by $1 per round
             bonus = 34 + (currentRound - 12);
         }
+        else
+        {
+            // After round 18, big cash boost to keep up with harder enemies
+            bonus = 40 + (currentRound - 18) * 5;
+        }
         
-        // Final cap to stop infinite money growth
-        bonus = Mathf.Min(bonus, 45);
+        // Higher cap for late game
+        bonus = Mathf.Min(bonus, 100);
         
         if (CurrencyManager.instance != null)
             CurrencyManager.instance.AddMoney(bonus);

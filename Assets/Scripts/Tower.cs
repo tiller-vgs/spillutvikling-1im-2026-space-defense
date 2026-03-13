@@ -65,8 +65,8 @@ public class Tower : MonoBehaviour
         // Sound setup
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
-        audioSource.volume = 0.005f; // almost silent volume
-        audioSource.pitch = 1.6f; // even faster
+        audioSource.volume = 0.015f;
+        audioSource.pitch = 1.8f; 
         audioSource.spatialBlend = 0f; // 2D sound
         
         // This won't throw an error if the file isn't there yet, it will just return null

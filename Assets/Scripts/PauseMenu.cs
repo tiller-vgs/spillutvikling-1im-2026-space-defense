@@ -126,23 +126,93 @@ public class PauseMenu : MonoBehaviour
                 if (FPSCounter.instance != null) FPSCounter.instance.Toggle(val);
             });
 
-        CreateText(settingsPanel.transform, "Cap FPS", 22,
+        CreateText(settingsPanel.transform, "Music", 22,
             new Vector2(0.35f, 0.52f), Color.white);
-        Toggle capToggle = CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.51f),
+        CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.51f),
+            SettingsManager.musicOn,
+            (val) => {
+                if (GameMusic.instance != null) GameMusic.instance.SetMusic(val);
+            });
+
+        CreateText(settingsPanel.transform, "Music Volume", 22,
+            new Vector2(0.35f, 0.44f), Color.white);
+
+        var pauseVolValObj = CreateText(settingsPanel.transform, Mathf.RoundToInt(SettingsManager.musicVolume * 100) + "%", 22,
+            new Vector2(0.72f, 0.44f), new Color(0.1f, 0.9f, 0.5f));
+        var pauseVolText = pauseVolValObj.GetComponent<Text>();
+
+        var musicVolSliderObj = new GameObject("MusicVolSlider");
+        musicVolSliderObj.transform.SetParent(settingsPanel.transform, false);
+        var musicVolSliderRect = musicVolSliderObj.AddComponent<RectTransform>();
+        musicVolSliderRect.anchorMin = new Vector2(0.3f, 0.38f);
+        musicVolSliderRect.anchorMax = new Vector2(0.7f, 0.40f);
+        musicVolSliderRect.offsetMin = Vector2.zero;
+        musicVolSliderRect.offsetMax = Vector2.zero;
+        musicVolSliderObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
+
+        var mvFillArea = new GameObject("Fill Area");
+        mvFillArea.transform.SetParent(musicVolSliderObj.transform, false);
+        var mvFillAreaRect = mvFillArea.AddComponent<RectTransform>();
+        mvFillAreaRect.anchorMin = Vector2.zero;
+        mvFillAreaRect.anchorMax = Vector2.one;
+        mvFillAreaRect.offsetMin = Vector2.zero;
+        mvFillAreaRect.offsetMax = Vector2.zero;
+
+        var mvFill = new GameObject("Fill");
+        mvFill.transform.SetParent(mvFillArea.transform, false);
+        mvFill.AddComponent<Image>().color = new Color(0.0f, 0.65f, 0.8f);
+        var mvFillR = mvFill.GetComponent<RectTransform>();
+        mvFillR.anchorMin = Vector2.zero;
+        mvFillR.anchorMax = Vector2.one;
+        mvFillR.offsetMin = Vector2.zero;
+        mvFillR.offsetMax = Vector2.zero;
+
+        var mvHandleArea = new GameObject("Handle Slide Area");
+        mvHandleArea.transform.SetParent(musicVolSliderObj.transform, false);
+        var mvHandleAreaRect = mvHandleArea.AddComponent<RectTransform>();
+        mvHandleAreaRect.anchorMin = Vector2.zero;
+        mvHandleAreaRect.anchorMax = Vector2.one;
+        mvHandleAreaRect.offsetMin = new Vector2(10, 0);
+        mvHandleAreaRect.offsetMax = new Vector2(-10, 0);
+
+        var mvHandle = new GameObject("Handle");
+        mvHandle.transform.SetParent(mvHandleArea.transform, false);
+        mvHandle.AddComponent<Image>().color = new Color(0.1f, 0.9f, 0.5f);
+        var mvHandleRect = mvHandle.GetComponent<RectTransform>();
+        mvHandleRect.anchorMin = new Vector2(0, 0);
+        mvHandleRect.anchorMax = new Vector2(0, 1);
+        mvHandleRect.sizeDelta = new Vector2(20, 0);
+
+        var musicVolSlider = musicVolSliderObj.AddComponent<Slider>();
+        musicVolSlider.fillRect = mvFillR;
+        musicVolSlider.handleRect = mvHandleRect;
+        musicVolSlider.minValue = 0;
+        musicVolSlider.maxValue = 1;
+        musicVolSlider.wholeNumbers = false;
+        musicVolSlider.value = SettingsManager.musicVolume;
+
+        musicVolSlider.onValueChanged.AddListener((val) => {
+            if (GameMusic.instance != null) GameMusic.instance.SetVolume(val);
+            if (pauseVolText != null) pauseVolText.text = Mathf.RoundToInt(val * 100) + "%";
+        });
+
+        CreateText(settingsPanel.transform, "Cap FPS", 22,
+            new Vector2(0.35f, 0.30f), Color.white);
+        Toggle capToggle = CreateToggle(settingsPanel.transform, new Vector2(0.6f, 0.29f),
             SettingsManager.fpsCapped, null);
 
         CreateText(settingsPanel.transform, "FPS Limit", 22,
-            new Vector2(0.35f, 0.42f), Color.white);
+            new Vector2(0.35f, 0.22f), Color.white);
 
         var capValObj = CreateText(settingsPanel.transform, SettingsManager.fpsCap + " FPS", 22,
-            new Vector2(0.72f, 0.42f), new Color(0.1f, 0.9f, 0.5f));
+            new Vector2(0.72f, 0.22f), new Color(0.1f, 0.9f, 0.5f));
         var capValueText = capValObj.GetComponent<Text>();
 
         var sliderObj = new GameObject("FPSSlider");
         sliderObj.transform.SetParent(settingsPanel.transform, false);
         var sliderRect = sliderObj.AddComponent<RectTransform>();
-        sliderRect.anchorMin = new Vector2(0.3f, 0.35f);
-        sliderRect.anchorMax = new Vector2(0.7f, 0.37f);
+        sliderRect.anchorMin = new Vector2(0.3f, 0.16f);
+        sliderRect.anchorMax = new Vector2(0.7f, 0.18f);
         sliderRect.offsetMin = Vector2.zero;
         sliderRect.offsetMax = Vector2.zero;
         sliderObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);
@@ -204,7 +274,7 @@ public class PauseMenu : MonoBehaviour
             localSlider.interactable = val;
         });
 
-        CreateButton(settingsPanel.transform, "BACK", new Vector2(0.5f, 0.2f),
+        CreateButton(settingsPanel.transform, "BACK", new Vector2(0.5f, 0.06f),
             new Vector2(240, 55), new Color(0.1f, 0.35f, 0.5f), () => CloseSettings());
     }
 

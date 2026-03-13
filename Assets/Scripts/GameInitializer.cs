@@ -46,10 +46,10 @@ public class GameInitializer : MonoBehaviour
         CreateStars();
         CreateNebulas();
         CreatePath();
-        CreatePathParticles();
         SetupSpawner();
         SetupDatabase();
         SetupUI();
+        SetupMusic();
     }
 
     void SetupCamera()
@@ -230,54 +230,6 @@ public class GameInitializer : MonoBehaviour
         borderLine.numCornerVertices = 4;
     }
 
-    void CreatePathParticles()
-    {
-        GameObject pathObj = GameObject.Find("EnemyPath");
-        if (pathObj == null) return;
-
-        GameObject particleObj = new GameObject("PathParticles");
-        particleObj.transform.parent = pathObj.transform;
-        particleObj.transform.localPosition = Vector3.zero;
-
-        var ps = particleObj.AddComponent<ParticleSystem>();
-        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-
-        var main = ps.main;
-        main.startLifetime = 2f;
-        main.startSpeed = 0.3f;
-        main.startSize = 0.08f;
-        main.startColor = new Color(0.3f, 0.6f, 1f, 0.5f);
-        main.maxParticles = 100;
-        main.simulationSpace = ParticleSystemSimulationSpace.World;
-        main.loop = true;
-        main.duration = 5f;
-
-        var emission = ps.emission;
-        emission.rateOverTime = 15;
-
-        var shape = ps.shape;
-        shape.shapeType = ParticleSystemShapeType.SingleSidedEdge;
-        shape.radius = 8f;
-
-        var sizeOverLifetime = ps.sizeOverLifetime;
-        sizeOverLifetime.enabled = true;
-        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.Linear(0, 1, 1, 0));
-
-        var colorOverLifetime = ps.colorOverLifetime;
-        colorOverLifetime.enabled = true;
-        Gradient grad = new Gradient();
-        grad.SetKeys(
-            new GradientColorKey[] { new GradientColorKey(new Color(0.3f, 0.6f, 1f), 0), new GradientColorKey(new Color(0.6f, 0.2f, 1f), 1) },
-            new GradientAlphaKey[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(0.5f, 0.3f), new GradientAlphaKey(0, 1) }
-        );
-        colorOverLifetime.color = grad;
-
-        var renderer = particleObj.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Sprites/Default"));
-        renderer.sortingOrder = 3;
-
-        ps.Play();
-    }
 
     void SetupSpawner()
     {
@@ -313,6 +265,12 @@ public class GameInitializer : MonoBehaviour
         GameObject eventSystem = new GameObject("EventSystem");
         eventSystem.AddComponent<EventSystem>();
         eventSystem.AddComponent<InputSystemUIInputModule>();
+    }
+
+    void SetupMusic()
+    {
+        GameObject musicObj = new GameObject("GameMusic");
+        musicObj.AddComponent<GameMusic>();
     }
 
     void KillCollider(GameObject obj)

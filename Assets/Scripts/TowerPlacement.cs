@@ -55,7 +55,6 @@ public class TowerPlacement : MonoBehaviour
         mouseWorld.z = 0;
         preview.transform.position = mouseWorld;
 
-        // check if on path
         bool onPath = IsOnPath(mouseWorld);
         bool canAfford = CurrencyManager.instance != null && CurrencyManager.instance.dollars >= currentTower.cost;
         bool tooClose = IsTooCloseToTower(mouseWorld);
@@ -109,7 +108,7 @@ public class TowerPlacement : MonoBehaviour
         Transform[] wps = enemyPath.waypoints;
         if (wps == null) return false;
 
-        float pathWidth = 0.6f;
+        float pathWidth = 0.35f;
 
         for (int i = 0; i < wps.Length - 1; i++)
         {

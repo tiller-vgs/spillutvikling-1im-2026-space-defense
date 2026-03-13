@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager instance;
-    public int dollars = 220;
+    public int dollars = 255;
 
     private Text dollarText;
 
