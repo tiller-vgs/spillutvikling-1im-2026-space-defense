@@ -7,13 +7,11 @@ public class DoorAnimator : MonoBehaviour
     float timer;
     public float frameRate = 0.15f;
     int currentFrame = 0;
-    bool opening = true;
-
     void Start()
     {
         sr = gameObject.GetComponent<SpriteRenderer>();
         if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
-        sr.sortingOrder = 1;
+        sr.sortingOrder = 10;
         
         frames = new Sprite[6];
         frames[0] = Resources.Load<Sprite>("door1");
@@ -28,31 +26,30 @@ public class DoorAnimator : MonoBehaviour
 
     void Update()
     {
-        timer += Time.deltaTime;
-        if (timer >= frameRate)
+        int targetFrame = 0;
+        if (RoundManager.instance != null && RoundManager.instance.roundActive)
         {
-            timer = 0;
-            if (opening)
+            targetFrame = frames.Length - 1;
+        }
+
+        if (currentFrame != targetFrame)
+        {
+            timer += Time.deltaTime;
+            if (timer >= frameRate)
             {
-                currentFrame++;
-                if (currentFrame >= frames.Length - 1)
+                timer = 0;
+                if (currentFrame < targetFrame)
                 {
-                    currentFrame = frames.Length - 1;
-                    opening = false;
+                    currentFrame++;
                 }
-            }
-            else
-            {
-                currentFrame--;
-                if (currentFrame <= 0)
+                else if (currentFrame > targetFrame)
                 {
-                    currentFrame = 0;
-                    opening = true;
+                    currentFrame--;
                 }
+                
+                if (frames[currentFrame] != null)
+                    sr.sprite = frames[currentFrame];
             }
-            
-            if (frames[currentFrame] != null)
-                sr.sprite = frames[currentFrame];
         }
     }
 }

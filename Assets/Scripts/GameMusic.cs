@@ -8,27 +8,55 @@ public class GameMusic : MonoBehaviour
 
     void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         instance = this;
+        DontDestroyOnLoad(gameObject);
     }
 
     void Start()
     {
-        audioSource = gameObject.AddComponent<AudioSource>();
-        audioSource.clip = Resources.Load<AudioClip>("Spilllot");
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        
         audioSource.loop = true;
-        audioSource.volume = SettingsManager.musicVolume;
         audioSource.playOnAwake = false;
+        audioSource.volume = SettingsManager.musicVolume;
+    }
+
+    public void PlayMenuMusic()
+    {
+        PlayClip("menumusic");
+    }
+
+    public void PlayGameMusic()
+    {
+        PlayClip("Spilllot");
+    }
+
+    void PlayClip(string clipName)
+    {
+        if (audioSource == null) return;
+        
+        AudioClip clip = Resources.Load<AudioClip>(clipName);
+        if (clip == null || (audioSource.clip != null && audioSource.clip.name == clip.name && audioSource.isPlaying)) return;
+
+        audioSource.Stop();
+        audioSource.clip = clip;
+        
+        if (SettingsManager.musicOn)
+        {
+            audioSource.Play();
+            hasStartedPlaying = true;
+        }
     }
 
     public void StartMusic()
     {
-        if (audioSource == null || audioSource.clip == null) return;
-        
-        // respect user settings
-        if (!SettingsManager.musicOn) return;
-
-        audioSource.Play();
-        hasStartedPlaying = true;
+        PlayGameMusic();
     }
 
     public void SetMusic(bool on)

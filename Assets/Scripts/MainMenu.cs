@@ -20,6 +20,8 @@ public class MainMenu : MonoBehaviour
         BuildSettingsUI();
         settingsPanel.SetActive(false);
         Invoke("ApplyFPSCounterState", 0.1f);
+        
+        if (GameMusic.instance != null) GameMusic.instance.PlayMenuMusic();
     }
 
     void ApplyFPSCounterState()
@@ -301,7 +303,7 @@ public class MainMenu : MonoBehaviour
         menuPanel.SetActive(false);
         if (backgroundLayer != null) backgroundLayer.SetActive(false);
         Time.timeScale = 1;
-        if (GameMusic.instance != null) GameMusic.instance.StartMusic();
+        if (GameMusic.instance != null) GameMusic.instance.PlayGameMusic();
     }
 
     void OpenSettings()
@@ -332,7 +334,7 @@ public class MainMenu : MonoBehaviour
         settingsPanel.SetActive(false);
         Time.timeScale = 0;
 
-        if (GameMusic.instance != null) GameMusic.instance.StopMusic();
+        if (GameMusic.instance != null) GameMusic.instance.PlayMenuMusic();
 
         if (videoPlayer != null)
         {

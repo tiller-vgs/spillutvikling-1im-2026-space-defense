@@ -23,7 +23,9 @@ public class GameInitializer : MonoBehaviour
 
     public void DoInit()
     {
-        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Background", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas", "SpawnDoor", "BaseDoor" };
+        SetupMusic();
+
+        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Background", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas", "SpawnDoor", "BaseDoor", "HealthCanvas" };
         foreach (string objName in oldObjects)
         {
             var old = GameObject.Find(objName);
@@ -39,7 +41,6 @@ public class GameInitializer : MonoBehaviour
         SetupSpawner();
         SetupDatabase();
         SetupUI();
-        SetupMusic();
     }
 
     void SetupCamera()
@@ -53,19 +54,14 @@ public class GameInitializer : MonoBehaviour
 
     void CreateBackground()
     {
-        var bg = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        bg.name = "Background";
-        bg.transform.position = new Vector3(0, 0, 5);
-        bg.transform.localScale = new Vector3(25, 15, 1);
-        
+        var bg = new GameObject("Background");
         var vp = bg.AddComponent<UnityEngine.Video.VideoPlayer>();
         vp.playOnAwake = true;
         vp.isLooping = true;
-        vp.renderMode = UnityEngine.Video.VideoRenderMode.MaterialOverride;
+        vp.renderMode = UnityEngine.Video.VideoRenderMode.CameraFarPlane;
+        vp.targetCamera = Camera.main;
         vp.clip = Resources.Load<UnityEngine.Video.VideoClip>("GameBk");
         vp.audioOutputMode = UnityEngine.Video.VideoAudioOutputMode.None;
-        
-        KillCollider(bg);
     }
 
 
@@ -155,15 +151,16 @@ public class GameInitializer : MonoBehaviour
         borderLine.numCapVertices = 4;
         borderLine.numCornerVertices = 4;
 
-        CreateDoor(positions[0], "SpawnDoor");
-        CreateDoor(positions[positions.Length - 1], "BaseDoor");
+        CreateDoor(positions[0], "SpawnDoor", -90f);
+        CreateDoor(positions[positions.Length - 1], "BaseDoor", 90f);
     }
 
-    void CreateDoor(Vector3 pos, string doorName)
+    void CreateDoor(Vector3 pos, string doorName, float rotationZ)
     {
         var doorObj = new GameObject(doorName);
         doorObj.transform.position = pos;
-        doorObj.transform.localScale = new Vector3(2f, 2f, 1f);
+        doorObj.transform.rotation = Quaternion.Euler(0, 0, rotationZ);
+        doorObj.transform.localScale = new Vector3(5f, 5f, 1f);
         doorObj.AddComponent<DoorAnimator>();
     }
 
@@ -204,6 +201,7 @@ public class GameInitializer : MonoBehaviour
 
     void SetupMusic()
     {
+        if (GameMusic.instance != null) return;
         var musicObj = new GameObject("GameMusic");
         musicObj.AddComponent<GameMusic>();
     }
