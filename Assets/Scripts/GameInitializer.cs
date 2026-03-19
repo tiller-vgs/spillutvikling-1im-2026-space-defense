@@ -103,56 +103,6 @@ public class GameInitializer : MonoBehaviour
         }
         pathScript.waypoints = wps;
 
-        var line = pathObj.AddComponent<LineRenderer>();
-        line.positionCount = positions.Length;
-        line.SetPositions(positions);
-        line.startWidth = 0.5f;
-        line.endWidth = 0.5f;
-        line.material = new Material(Shader.Find("Sprites/Default"));
-        line.startColor = new Color(0.1f, 0.4f, 0.9f, 0.4f);
-        line.endColor = new Color(0.6f, 0.1f, 0.9f, 0.4f);
-        line.sortingOrder = 2;
-        line.useWorldSpace = true;
-        line.numCapVertices = 4;
-        line.numCornerVertices = 4;
-
-        var glowObj = new GameObject("PathGlow");
-        glowObj.transform.parent = pathObj.transform;
-        glowObj.transform.localPosition = Vector3.zero;
-
-        var glowLine = glowObj.AddComponent<LineRenderer>();
-        glowLine.positionCount = positions.Length;
-        glowLine.SetPositions(positions);
-        glowLine.startWidth = 1.0f;
-        glowLine.endWidth = 1.0f;
-        glowLine.material = new Material(Shader.Find("Sprites/Default"));
-        glowLine.startColor = new Color(0.1f, 0.3f, 0.8f, 0.1f);
-        glowLine.endColor = new Color(0.5f, 0.1f, 0.8f, 0.1f);
-        glowLine.sortingOrder = 1;
-        glowLine.useWorldSpace = true;
-        glowLine.numCapVertices = 6;
-        glowLine.numCornerVertices = 6;
-
-        var borderObj = new GameObject("PathBorder");
-        borderObj.transform.parent = pathObj.transform;
-        borderObj.transform.localPosition = Vector3.zero;
-
-        var borderLine = borderObj.AddComponent<LineRenderer>();
-        borderLine.positionCount = positions.Length;
-        Vector3[] borderPositions = new Vector3[positions.Length];
-        for (int i = 0; i < positions.Length; i++)
-            borderPositions[i] = positions[i] + new Vector3(0, 0, 0.1f);
-        borderLine.SetPositions(borderPositions);
-        borderLine.startWidth = 0.7f;
-        borderLine.endWidth = 0.7f;
-        borderLine.material = new Material(Shader.Find("Sprites/Default"));
-        borderLine.startColor = new Color(0.05f, 0.15f, 0.4f, 0.6f);
-        borderLine.endColor = new Color(0.3f, 0.05f, 0.4f, 0.6f);
-        borderLine.sortingOrder = 1;
-        borderLine.useWorldSpace = true;
-        borderLine.numCapVertices = 4;
-        borderLine.numCornerVertices = 4;
-
         CreateDoor(positions[0], "SpawnDoor", -90f);
         CreateDoor(positions[positions.Length - 1], "BaseDoor", 90f);
     }
