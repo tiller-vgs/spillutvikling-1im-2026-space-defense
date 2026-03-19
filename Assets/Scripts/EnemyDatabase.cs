@@ -33,18 +33,20 @@ public class EnemyDatabase : MonoBehaviour
     void Awake()
     {
         instance = this;
-        TextAsset json = Resources.Load<TextAsset>("enemies");
+        var json = Resources.Load<TextAsset>("enemies");
         if (json != null)
         {
-            EnemyDataList list = JsonUtility.FromJson<EnemyDataList>(json.text);
+            var list = JsonUtility.FromJson<EnemyDataList>(json.text);
             enemies = list.enemies;
         }
     }
 
     public EnemyData GetEnemy(string id)
     {
+        // søk etter matching enemy id, fallback til første
         foreach (var e in enemies)
             if (e.id == id) return e;
+            
         return enemies[0];
     }
 }

@@ -10,16 +10,16 @@ public class RoundManager : MonoBehaviour
     public bool autoStart = false;
     public bool roundActive = false;
 
-    private int enemiesSpawned = 0;
-    private int enemiesToSpawn = 0;
-    private float spawnTimer = 0;
+    int enemiesSpawned = 0;
+    int enemiesToSpawn = 0;
+    float spawnTimer = 0;
 
-    private Text roundText;
-    private Text roundAnnouncerText;
-    private GameObject startButton;
-    private CanvasGroup announcerGroup;
+    Text roundText;
+    Text roundAnnouncerText;
+    GameObject startButton;
+    CanvasGroup announcerGroup;
 
-    private EnemySpawner spawner;
+    EnemySpawner spawner;
 
     void Awake()
     {
@@ -34,8 +34,8 @@ public class RoundManager : MonoBehaviour
 
     void BuildUI()
     {
-        GameObject canvasObj = new GameObject("RoundCanvas");
-        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        var canvasObj = new GameObject("RoundCanvas");
+        var canvas = canvasObj.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 95;
         var scaler = canvasObj.AddComponent<CanvasScaler>();
@@ -43,8 +43,7 @@ public class RoundManager : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         canvasObj.AddComponent<GraphicRaycaster>();
 
-        // Round counter - top left, below money
-        GameObject roundBg = new GameObject("RoundBG");
+        var roundBg = new GameObject("RoundBG");
         roundBg.transform.SetParent(canvasObj.transform, false);
         var bgImg = roundBg.AddComponent<Image>();
         bgImg.color = new Color(0.08f, 0.08f, 0.15f, 0.8f);
@@ -55,7 +54,7 @@ public class RoundManager : MonoBehaviour
         bgRect.anchoredPosition = new Vector2(15, -60);
         bgRect.sizeDelta = new Vector2(180, 35);
 
-        GameObject roundObj = new GameObject("RoundText");
+        var roundObj = new GameObject("RoundText");
         roundObj.transform.SetParent(roundBg.transform, false);
         roundText = roundObj.AddComponent<Text>();
         roundText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -70,7 +69,6 @@ public class RoundManager : MonoBehaviour
         rtRect.offsetMin = Vector2.zero;
         rtRect.offsetMax = Vector2.zero;
 
-        // Start round button - bottom right (like Bloons)
         startButton = new GameObject("StartRoundBtn");
         startButton.transform.SetParent(canvasObj.transform, false);
         var startImg = startButton.AddComponent<Image>();
@@ -89,9 +87,9 @@ public class RoundManager : MonoBehaviour
         startBtn.colors = colors;
         startBtn.onClick.AddListener(() => StartNextRound());
 
-        GameObject startLabel = new GameObject("Label");
+        var startLabel = new GameObject("Label");
         startLabel.transform.SetParent(startButton.transform, false);
-        Text startText = startLabel.AddComponent<Text>();
+        var startText = startLabel.AddComponent<Text>();
         startText.text = "START ▶";
         startText.fontSize = 22;
         startText.fontStyle = FontStyle.Bold;
@@ -104,8 +102,7 @@ public class RoundManager : MonoBehaviour
         stRect.offsetMin = Vector2.zero;
         stRect.offsetMax = Vector2.zero;
 
-        // Round announcer (center screen, fading)
-        GameObject announcerObj = new GameObject("RoundAnnouncer");
+        var announcerObj = new GameObject("RoundAnnouncer");
         announcerObj.transform.SetParent(canvasObj.transform, false);
         announcerGroup = announcerObj.AddComponent<CanvasGroup>();
         announcerGroup.alpha = 0;
@@ -115,10 +112,10 @@ public class RoundManager : MonoBehaviour
         announcerRect.sizeDelta = new Vector2(600, 120);
         announcerRect.anchoredPosition = new Vector2(-100, 50);
 
-        GameObject announcerTextObj = new GameObject("AnnouncerText");
+        var announcerTextObj = new GameObject("AnnouncerText");
         announcerTextObj.transform.SetParent(announcerObj.transform, false);
-        var atRect = announcerTextObj.AddComponent<RectTransform>(); // Fix: Add RectTransform
-        
+        var atRect = announcerTextObj.AddComponent<RectTransform>();
+
         roundAnnouncerText = announcerTextObj.AddComponent<Text>();
         roundAnnouncerText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         roundAnnouncerText.fontSize = 72;
@@ -126,7 +123,7 @@ public class RoundManager : MonoBehaviour
         roundAnnouncerText.color = new Color(0.3f, 0.8f, 1f);
         roundAnnouncerText.alignment = TextAnchor.MiddleCenter;
         roundAnnouncerText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        
+
         atRect.anchorMin = Vector2.zero;
         atRect.anchorMax = Vector2.one;
         atRect.offsetMin = Vector2.zero;
@@ -135,6 +132,7 @@ public class RoundManager : MonoBehaviour
 
     public void StartNextRound()
     {
+        // prevent double trigger
         if (roundActive) return;
 
         currentRound++;
@@ -142,8 +140,6 @@ public class RoundManager : MonoBehaviour
         enemiesSpawned = 0;
         spawnTimer = 0;
 
-        // calculate enemies for this round
-        enemiesToSpawn = GetEnemyCount(currentRound);
         enemiesToSpawn = GetEnemyCount(currentRound);
 
         roundText.text = "ROUND " + currentRound;
@@ -154,25 +150,20 @@ public class RoundManager : MonoBehaviour
 
     int GetEnemyCount(int round)
     {
-        // starts at 6, grows faster
         return 6 + (round - 1) * 4;
     }
 
     string GetEnemyTypeForSpawn(int round, int index)
     {
-        // every 5 rounds, the last enemy is a boss
+        // hardcoded boss spawn at end of round 5, 10, etc
         if (round >= 5 && round % 5 == 0 && index == enemiesToSpawn - 1)
             return "boss";
 
         if (round <= 2)
-        {
-            // early rounds: basic + some swarm
             return (index % 4 == 0) ? "swarm" : "basic";
-        }
 
         if (round <= 4)
         {
-            // mix basic, fast, and swarm
             if (index % 4 == 0) return "fast";
             if (index % 5 == 0) return "swarm";
             return "basic";
@@ -180,7 +171,6 @@ public class RoundManager : MonoBehaviour
 
         if (round <= 7)
         {
-            // introduce stealth and tank
             if (index % 6 == 0) return "tank";
             if (index % 5 == 0) return "stealth";
             if (index % 3 == 0) return "fast";
@@ -190,7 +180,6 @@ public class RoundManager : MonoBehaviour
 
         if (round <= 8)
         {
-            // heavy mix
             if (index % 4 == 0) return "tank";
             if (index % 3 == 0) return "stealth";
             if (index % 5 == 0) return "swarm";
@@ -198,7 +187,6 @@ public class RoundManager : MonoBehaviour
             return "basic";
         }
 
-        // round 9+: chaos mode, lots of everything
         int type = index % 6;
         switch (type)
         {
@@ -213,20 +201,17 @@ public class RoundManager : MonoBehaviour
 
     float GetSpawnDelay(int round)
     {
-        // spawns get faster each round
         float delay = 2.0f - (round - 1) * 0.08f;
         return Mathf.Max(delay, 0.4f);
     }
 
     float GetHealthMultiplier(int round)
     {
-        // enemies get +22% health per round instead of 15%
         return 1f + (round - 1) * 0.22f;
     }
 
     int GetRewardMultiplier(int round)
     {
-        // R1-15: 1x, R16-30: 2x, R31+: 3x
         if (round <= 15) return 1;
         if (round <= 30) return 2;
         return 3;
@@ -249,12 +234,9 @@ public class RoundManager : MonoBehaviour
         }
         else
         {
-            // all spawned, check if all dead
-            EnemyMovement[] alive = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
+            var alive = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
             if (alive.Length == 0)
-            {
                 RoundComplete();
-            }
         }
     }
 
@@ -278,36 +260,24 @@ public class RoundManager : MonoBehaviour
     {
         roundActive = false;
 
-        // bonus money for completing a round
+        // calculate end of round cash bonus
         int bonus = 0;
         if (currentRound <= 12)
-        {
             bonus = 10 + currentRound * 2;
-        }
         else if (currentRound <= 18)
-        {
             bonus = 34 + (currentRound - 12);
-        }
         else
-        {
-            // After round 18, big cash boost to keep up with harder enemies
             bonus = 40 + (currentRound - 18) * 5;
-        }
-        
-        // Higher cap for late game
+
         bonus = Mathf.Min(bonus, 100);
-        
+
         if (CurrencyManager.instance != null)
             CurrencyManager.instance.AddMoney(bonus);
 
         if (autoStart)
-        {
             Invoke("StartNextRound", 2f);
-        }
         else
-        {
             startButton.SetActive(true);
-        }
     }
 
     IEnumerator ShowRoundAnnouncement(string text)

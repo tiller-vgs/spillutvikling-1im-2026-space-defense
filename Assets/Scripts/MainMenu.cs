@@ -5,11 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    private GameObject menuPanel;
-    private GameObject settingsPanel;
-    private GameObject backgroundLayer;
-    private VideoPlayer videoPlayer;
-    private RawImage bgImage;
+    GameObject menuPanel;
+    GameObject settingsPanel;
+    GameObject backgroundLayer;
+    VideoPlayer videoPlayer;
+    RawImage bgImage;
 
     void Start()
     {
@@ -111,7 +111,6 @@ public class MainMenu : MonoBehaviour
         CreateText(settingsPanel.transform, "SETTINGS", 48,
             new Vector2(0.5f, 0.88f), new Color(0.0f, 0.85f, 0.9f));
 
-        // Music toggle
         CreateText(settingsPanel.transform, "Music", 24,
             new Vector2(0.35f, 0.78f), Color.white);
 
@@ -144,7 +143,6 @@ public class MainMenu : MonoBehaviour
             if (GameMusic.instance != null) GameMusic.instance.SetMusic(val);
         });
 
-        // Music volume slider
         CreateText(settingsPanel.transform, "Music Volume", 24,
             new Vector2(0.35f, 0.70f), Color.white);
 
@@ -163,7 +161,6 @@ public class MainMenu : MonoBehaviour
             if (volValueText != null) volValueText.text = Mathf.RoundToInt(val * 100) + "%";
         });
 
-        // FPS Counter
         CreateText(settingsPanel.transform, "FPS Counter", 24,
             new Vector2(0.35f, 0.55f), Color.white);
 

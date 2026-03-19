@@ -4,11 +4,11 @@ using UnityEngine.EventSystems;
 
 public class TowerPlacement : MonoBehaviour
 {
-    private TowerData currentTower;
-    private GameObject preview;
-    private SpriteRenderer previewSr;
-    private bool isPlacing = false;
-    private EnemyPath enemyPath;
+    TowerData currentTower;
+    GameObject preview;
+    SpriteRenderer previewSr;
+    bool isPlacing = false;
+    EnemyPath enemyPath;
 
     void Start()
     {
@@ -21,15 +21,13 @@ public class TowerPlacement : MonoBehaviour
         currentTower = data;
         isPlacing = true;
 
-        // create preview
         preview = new GameObject("TowerPreview");
         previewSr = preview.AddComponent<SpriteRenderer>();
         previewSr.sprite = MakePreviewSprite();
         previewSr.sortingOrder = 20;
         preview.transform.localScale = Vector3.one * 0.5f;
 
-        // range circle preview
-        GameObject rangeObj = new GameObject("RangePreview");
+        var rangeObj = new GameObject("RangePreview");
         rangeObj.transform.parent = preview.transform;
         rangeObj.transform.localPosition = Vector3.zero;
         var rangeSr = rangeObj.AddComponent<SpriteRenderer>();
@@ -50,7 +48,6 @@ public class TowerPlacement : MonoBehaviour
     {
         if (!isPlacing || currentTower == null || preview == null) return;
 
-        // follow mouse
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         mouseWorld.z = 0;
         preview.transform.position = mouseWorld;
@@ -58,16 +55,13 @@ public class TowerPlacement : MonoBehaviour
         bool onPath = IsOnPath(mouseWorld);
         bool canAfford = CurrencyManager.instance != null && CurrencyManager.instance.dollars >= currentTower.cost;
         bool tooClose = IsTooCloseToTower(mouseWorld);
-
         bool canPlace = !onPath && canAfford && !tooClose;
 
-        // color preview
         if (canPlace)
         {
             Color c = currentTower.color.ToColor();
             c.a = 0.7f;
             previewSr.color = c;
-            // update range circle
             var rangeRend = preview.GetComponentsInChildren<SpriteRenderer>();
             if (rangeRend.Length > 1)
             {
@@ -84,7 +78,6 @@ public class TowerPlacement : MonoBehaviour
                 rangeRend[1].color = new Color(1f, 0.2f, 0.2f, 0.1f);
         }
 
-        // click to place
         if (Mouse.current.leftButton.wasPressedThisFrame && !IsPointerOverUI())
         {
             if (canPlace)
@@ -99,6 +92,7 @@ public class TowerPlacement : MonoBehaviour
 
     bool IsOnPath(Vector3 pos)
     {
+        // sjekk om vi plassere for nærme enemy path
         if (enemyPath == null)
         {
             enemyPath = Object.FindFirstObjectByType<EnemyPath>();
@@ -122,7 +116,7 @@ public class TowerPlacement : MonoBehaviour
 
     bool IsTooCloseToTower(Vector3 pos)
     {
-        Tower[] towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+        var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
         foreach (var t in towers)
         {
             if (Vector3.Distance(pos, t.transform.position) < 0.6f)
@@ -145,25 +139,23 @@ public class TowerPlacement : MonoBehaviour
         if (CurrencyManager.instance == null || !CurrencyManager.instance.SpendMoney(currentTower.cost))
             return;
 
-        GameObject towerObj = new GameObject(currentTower.name);
+        var towerObj = new GameObject(currentTower.name);
         towerObj.transform.position = pos;
-        Tower tower = towerObj.AddComponent<Tower>();
+        var tower = towerObj.AddComponent<Tower>();
         tower.Setup(currentTower);
 
-        // add click handler for upgrades
-        var col = towerObj.AddComponent<CircleCollider2D>();
-        col.radius = 0.3f;
-        var upgrader = towerObj.AddComponent<TowerUpgrader>();
+        towerObj.AddComponent<CircleCollider2D>().radius = 0.3f;
+        towerObj.AddComponent<TowerUpgrader>();
 
         CancelPlacing();
-        TowerShop shop = Object.FindFirstObjectByType<TowerShop>();
+        var shop = Object.FindFirstObjectByType<TowerShop>();
         if (shop != null) shop.CancelSelection();
     }
 
     Sprite MakePreviewSprite()
     {
         int size = 32;
-        Texture2D tex = new Texture2D(size, size);
+        var tex = new Texture2D(size, size);
         tex.filterMode = FilterMode.Bilinear;
         Color[] pixels = new Color[size * size];
         float center = size / 2f;
@@ -186,7 +178,7 @@ public class TowerPlacement : MonoBehaviour
     Sprite MakeCircleSprite()
     {
         int size = 64;
-        Texture2D tex = new Texture2D(size, size);
+        var tex = new Texture2D(size, size);
         tex.filterMode = FilterMode.Bilinear;
         Color[] pixels = new Color[size * size];
         float center = size / 2f;

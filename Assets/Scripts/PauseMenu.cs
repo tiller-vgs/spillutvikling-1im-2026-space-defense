@@ -5,10 +5,10 @@ using UnityEngine.Video;
 
 public class PauseMenu : MonoBehaviour
 {
-    private GameObject pauseButton;
-    private GameObject pausePanel;
-    private GameObject settingsPanel;
-    private bool isPaused = false;
+    GameObject pauseButton;
+    GameObject pausePanel;
+    GameObject settingsPanel;
+    bool isPaused = false;
 
     void Start()
     {
@@ -334,6 +334,7 @@ public class PauseMenu : MonoBehaviour
 
     void TogglePause()
     {
+        // basic pause toggle logic
         if (isPaused) Resume();
         else Pause();
     }

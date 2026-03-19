@@ -29,7 +29,8 @@ public static class SettingsManager
 
     public static void ApplyFPS()
     {
-        QualitySettings.vSyncCount = 0; // Must disable VSync for targetFrameRate to work
+        // vsync må vær av for at target frame rate ska funk
+        QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = fpsCapped ? fpsCap : -1;
         Save();
     }

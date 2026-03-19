@@ -7,6 +7,7 @@ public class EnemyPath : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        // safety check
         if (waypoints == null || waypoints.Length < 2) return;
 
         for (int i = 0; i < waypoints.Length; i++)

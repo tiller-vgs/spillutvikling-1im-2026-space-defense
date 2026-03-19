@@ -4,9 +4,11 @@ using UnityEngine.UI;
 public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager instance;
+    
+    // starting cash
     public int dollars = 255;
 
-    private Text dollarText;
+    Text dollarText;
 
     void Awake()
     {
@@ -21,27 +23,26 @@ public class CurrencyManager : MonoBehaviour
 
     void BuildUI()
     {
-        GameObject canvas = new GameObject("CurrencyCanvas");
-        Canvas c = canvas.AddComponent<Canvas>();
+        var canvas = new GameObject("CurrencyCanvas");
+        var c = canvas.AddComponent<Canvas>();
         c.renderMode = RenderMode.ScreenSpaceOverlay;
         c.sortingOrder = 100;
         var scaler = canvas.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
 
-        // dollar display - top left
-        GameObject bg = new GameObject("DollarBG");
+        var bg = new GameObject("DollarBG");
         bg.transform.SetParent(canvas.transform, false);
-        Image bgImg = bg.AddComponent<Image>();
+        var bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.08f, 0.08f, 0.15f, 0.8f);
-        RectTransform bgRect = bg.GetComponent<RectTransform>();
+        var bgRect = bg.GetComponent<RectTransform>();
         bgRect.anchorMin = new Vector2(0, 1);
         bgRect.anchorMax = new Vector2(0, 1);
         bgRect.pivot = new Vector2(0, 1);
         bgRect.anchoredPosition = new Vector2(15, -15);
         bgRect.sizeDelta = new Vector2(180, 40);
 
-        GameObject textObj = new GameObject("DollarText");
+        var textObj = new GameObject("DollarText");
         textObj.transform.SetParent(bg.transform, false);
         dollarText = textObj.AddComponent<Text>();
         dollarText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -49,7 +50,7 @@ public class CurrencyManager : MonoBehaviour
         dollarText.fontStyle = FontStyle.Bold;
         dollarText.color = new Color(0.3f, 1f, 0.4f);
         dollarText.alignment = TextAnchor.MiddleCenter;
-        RectTransform trt = textObj.GetComponent<RectTransform>();
+        var trt = textObj.GetComponent<RectTransform>();
         trt.anchorMin = Vector2.zero;
         trt.anchorMax = Vector2.one;
         trt.offsetMin = Vector2.zero;
@@ -64,7 +65,9 @@ public class CurrencyManager : MonoBehaviour
 
     public bool SpendMoney(int amount)
     {
+        // Ikke nok penga
         if (dollars < amount) return false;
+        
         dollars -= amount;
         UpdateDisplay();
         return true;

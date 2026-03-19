@@ -3,8 +3,8 @@ using UnityEngine;
 public class GameMusic : MonoBehaviour
 {
     public static GameMusic instance;
-    private AudioSource audioSource;
-    private bool hasStartedPlaying = false;
+    AudioSource audioSource;
+    bool hasStartedPlaying = false;
 
     void Awake()
     {
@@ -23,8 +23,10 @@ public class GameMusic : MonoBehaviour
     public void StartMusic()
     {
         if (audioSource == null || audioSource.clip == null) return;
-        if (!SettingsManager.musicOn) return;
         
+        // respect user settings
+        if (!SettingsManager.musicOn) return;
+
         audioSource.Play();
         hasStartedPlaying = true;
     }

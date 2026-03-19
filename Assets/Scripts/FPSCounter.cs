@@ -3,10 +3,10 @@ using UnityEngine;
 public class FPSCounter : MonoBehaviour
 {
     public static FPSCounter instance;
-    
-    private float deltaTime;
-    private bool showFPS = false;
-    private GUIStyle style;
+
+    float deltaTime;
+    bool showFPS = false;
+    GUIStyle style;
 
     void Awake()
     {
@@ -40,12 +40,10 @@ public class FPSCounter : MonoBehaviour
         int fps = Mathf.RoundToInt(1.0f / deltaTime);
         string text = fps + " FPS";
 
-        // shadow
-        GUIStyle shadow = new GUIStyle(style);
+        var shadow = new GUIStyle(style);
         shadow.normal.textColor = Color.black;
         GUI.Label(new Rect(Screen.width - 149, 11, 140, 30), text, shadow);
-        
-        // colored text based on fps
+
         if (fps >= 55) style.normal.textColor = Color.green;
         else if (fps >= 30) style.normal.textColor = Color.yellow;
         else style.normal.textColor = Color.red;

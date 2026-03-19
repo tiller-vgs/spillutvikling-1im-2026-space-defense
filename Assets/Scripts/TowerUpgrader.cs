@@ -5,10 +5,10 @@ using UnityEngine.EventSystems;
 
 public class TowerUpgrader : MonoBehaviour
 {
-    private Tower tower;
-    private GameObject upgradePanel;
-    private static TowerUpgrader activePanel;
-    private bool justOpened = false;
+    Tower tower;
+    GameObject upgradePanel;
+    static TowerUpgrader activePanel;
+    bool justOpened = false;
 
     void Start()
     {
@@ -19,6 +19,7 @@ public class TowerUpgrader : MonoBehaviour
     {
         if (Mouse.current == null) return;
 
+        // click detection for upgrades
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
@@ -52,7 +53,7 @@ public class TowerUpgrader : MonoBehaviour
         justOpened = true;
 
         upgradePanel = new GameObject("UpgradePanel");
-        Canvas canvas = upgradePanel.AddComponent<Canvas>();
+        var canvas = upgradePanel.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 160;
         var scaler = upgradePanel.AddComponent<CanvasScaler>();
@@ -65,8 +66,7 @@ public class TowerUpgrader : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             upgradePanel.GetComponent<RectTransform>(), screenPos, null, out canvasPos);
 
-        // panel bg
-        GameObject bg = new GameObject("BG");
+        var bg = new GameObject("BG");
         bg.transform.SetParent(upgradePanel.transform, false);
         var bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.05f, 0.03f, 0.12f, 0.95f);
@@ -74,25 +74,21 @@ public class TowerUpgrader : MonoBehaviour
         bgRect.anchoredPosition = new Vector2(canvasPos.x, canvasPos.y + 80);
         bgRect.sizeDelta = new Vector2(200, 170);
 
-        // tower name + level
         CreateText(bg.transform, tower.data.name + " Lv." + tower.level + "/" + Tower.MAX_LEVEL, 15,
             new Vector2(0, 65), Color.white);
 
-        // damage
         CreateText(bg.transform, "DMG: " + tower.GetDamage(), 14,
             new Vector2(0, 45), new Color(0.9f, 0.6f, 0.3f));
 
-        // range
         CreateText(bg.transform, "RNG: " + tower.data.range, 14,
             new Vector2(0, 28), new Color(0.6f, 0.8f, 1f));
 
-        // upgrade button (or MAX LEVEL text)
         if (tower.CanUpgrade())
         {
             int cost = tower.GetUpgradeCost();
             bool canAfford = CurrencyManager.instance != null && CurrencyManager.instance.dollars >= cost;
 
-            GameObject btnObj = new GameObject("UpgradeBtn");
+            var btnObj = new GameObject("UpgradeBtn");
             btnObj.transform.SetParent(bg.transform, false);
             var btnImg = btnObj.AddComponent<Image>();
             btnImg.color = canAfford ? new Color(0.1f, 0.5f, 0.2f) : new Color(0.3f, 0.3f, 0.3f);
@@ -113,9 +109,8 @@ public class TowerUpgrader : MonoBehaviour
             CreateText(bg.transform, "MAX LEVEL", 16, new Vector2(0, 2), new Color(1f, 0.85f, 0.2f));
         }
 
-        // sell button
         int sellValue = tower.GetSellValue();
-        GameObject sellObj = new GameObject("SellBtn");
+        var sellObj = new GameObject("SellBtn");
         sellObj.transform.SetParent(bg.transform, false);
         var sellImg = sellObj.AddComponent<Image>();
         sellImg.color = new Color(0.6f, 0.15f, 0.1f);
@@ -131,8 +126,7 @@ public class TowerUpgrader : MonoBehaviour
 
         CreateText(sellObj.transform, "SELL $" + sellValue, 15, Vector2.zero, Color.white);
 
-        // close button
-        GameObject closeObj = new GameObject("CloseBtn");
+        var closeObj = new GameObject("CloseBtn");
         closeObj.transform.SetParent(bg.transform, false);
         var closeImg = closeObj.AddComponent<Image>();
         closeImg.color = new Color(0.3f, 0.3f, 0.4f);
@@ -182,9 +176,9 @@ public class TowerUpgrader : MonoBehaviour
 
     void CreateText(Transform parent, string content, int size, Vector2 pos, Color color)
     {
-        GameObject obj = new GameObject("Text");
+        var obj = new GameObject("Text");
         obj.transform.SetParent(parent, false);
-        Text txt = obj.AddComponent<Text>();
+        var txt = obj.AddComponent<Text>();
         txt.text = content;
         txt.fontSize = size;
         txt.color = color;

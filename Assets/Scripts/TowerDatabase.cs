@@ -34,16 +34,16 @@ public class TowerDataList
 public class TowerDatabase : MonoBehaviour
 {
     public static TowerDatabase instance;
-    private Dictionary<string, TowerData> towerDict = new Dictionary<string, TowerData>();
-    private TowerData[] allTowers;
+    Dictionary<string, TowerData> towerDict = new Dictionary<string, TowerData>();
+    TowerData[] allTowers;
 
     void Awake()
     {
         instance = this;
-        TextAsset json = Resources.Load<TextAsset>("towers");
+        var json = Resources.Load<TextAsset>("towers");
         if (json != null)
         {
-            TowerDataList list = JsonUtility.FromJson<TowerDataList>(json.text);
+            var list = JsonUtility.FromJson<TowerDataList>(json.text);
             allTowers = list.towers;
             foreach (var t in allTowers)
                 towerDict[t.id] = t;
@@ -52,6 +52,7 @@ public class TowerDatabase : MonoBehaviour
 
     public TowerData GetTower(string id)
     {
+        // fast lookup
         if (towerDict.ContainsKey(id)) return towerDict[id];
         return null;
     }

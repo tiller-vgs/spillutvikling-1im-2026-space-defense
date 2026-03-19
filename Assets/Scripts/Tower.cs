@@ -6,26 +6,23 @@ public class Tower : MonoBehaviour
     public TowerData data;
     public int level = 1;
     public const int MAX_LEVEL = 5;
-    private float fireTimer;
-    private LineRenderer laserLine;
-    private AudioSource audioSource;
-    private AudioClip laserSound;
-    private GameObject rangeCircle;
+    float fireTimer;
+    LineRenderer laserLine;
+    AudioSource audioSource;
+    AudioClip laserSound;
+    GameObject rangeCircle;
 
     public void Setup(TowerData towerData)
     {
         data = towerData;
 
-        // build tower visual
         var sr = gameObject.AddComponent<SpriteRenderer>();
         sr.sprite = MakeTowerSprite();
         sr.color = data.color.ToColor();
         sr.sortingOrder = 8;
-
         transform.localScale = Vector3.one * 0.5f;
 
-        // inner glow
-        GameObject glow = new GameObject("Glow");
+        var glow = new GameObject("Glow");
         glow.transform.parent = transform;
         glow.transform.localPosition = Vector3.zero;
         glow.transform.localScale = Vector3.one * 0.6f;
@@ -37,7 +34,6 @@ public class Tower : MonoBehaviour
         glowSr.color = gc;
         glowSr.sortingOrder = 9;
 
-        // range circle
         rangeCircle = new GameObject("Range");
         rangeCircle.transform.parent = transform;
         rangeCircle.transform.localPosition = Vector3.zero;
@@ -48,9 +44,8 @@ public class Tower : MonoBehaviour
         rangeSr.color = rc;
         rangeSr.sortingOrder = 1;
         rangeCircle.transform.localScale = Vector3.one * data.range * 2f / 0.5f;
-        rangeCircle.SetActive(false); // Hide by default
+        rangeCircle.SetActive(false);
 
-        // laser line for shooting
         laserLine = gameObject.AddComponent<LineRenderer>();
         laserLine.startWidth = 0.04f;
         laserLine.endWidth = 0.02f;
@@ -62,14 +57,12 @@ public class Tower : MonoBehaviour
         laserLine.positionCount = 0;
         laserLine.sortingOrder = 7;
 
-        // Sound setup
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.volume = 0.015f;
-        audioSource.pitch = 1.8f; 
-        audioSource.spatialBlend = 0f; // 2D sound
-        
-        // This won't throw an error if the file isn't there yet, it will just return null
+        audioSource.pitch = 1.8f;
+        audioSource.spatialBlend = 0f;
+
         laserSound = Resources.Load<AudioClip>("Laserlyd");
     }
 
@@ -84,25 +77,22 @@ public class Tower : MonoBehaviour
             if (target != null)
             {
                 target.TakeDamage(data.damage + (level - 1) * data.upgradeDamage);
-                
+
                 if (data.slowAmount > 0)
                 {
                     float currentSlow = data.slowAmount + (level - 1) * data.upgradeSlowAmount;
-                    target.ApplySlow(currentSlow, 0.5f); // 0.5s duration per hit
+                    target.ApplySlow(currentSlow, 0.5f);
                 }
 
                 ShowLaser(target.transform.position);
 
                 if (laserSound != null && audioSource != null)
-                {
                     audioSource.PlayOneShot(laserSound);
-                }
 
                 fireTimer = 0;
             }
         }
 
-        // fade laser
         if (laserLine != null && laserLine.positionCount > 0)
         {
             Color c = laserLine.startColor;
@@ -134,7 +124,8 @@ public class Tower : MonoBehaviour
 
     EnemyMovement FindClosestEnemy()
     {
-        EnemyMovement[] enemies = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
+        // simplistic distance check
+        var enemies = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
         EnemyMovement closest = null;
         float closestDist = data.range;
 
@@ -159,7 +150,6 @@ public class Tower : MonoBehaviour
     {
         if (!CanUpgrade()) return;
         level++;
-        // visual feedback
         transform.localScale = Vector3.one * (0.5f + level * 0.05f);
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null)
@@ -202,7 +192,7 @@ public class Tower : MonoBehaviour
     Sprite MakeTowerSprite()
     {
         int size = 32;
-        Texture2D tex = new Texture2D(size, size);
+        var tex = new Texture2D(size, size);
         tex.filterMode = FilterMode.Bilinear;
         Color[] pixels = new Color[size * size];
         float center = size / 2f;
@@ -211,7 +201,6 @@ public class Tower : MonoBehaviour
         {
             for (int x = 0; x < size; x++)
             {
-                // diamond/rhombus shape
                 float dx = Mathf.Abs(x - center) / center;
                 float dy = Mathf.Abs(y - center) / center;
                 float dist = dx + dy;
@@ -227,7 +216,7 @@ public class Tower : MonoBehaviour
     Sprite MakeCircleSprite()
     {
         int size = 64;
-        Texture2D tex = new Texture2D(size, size);
+        var tex = new Texture2D(size, size);
         tex.filterMode = FilterMode.Bilinear;
         Color[] pixels = new Color[size * size];
         float center = size / 2f;

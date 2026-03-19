@@ -10,7 +10,7 @@ public class StarTwinkle : MonoBehaviour
             if (sr == null) continue;
 
             float flicker = Mathf.PerlinNoise(star.position.x * 10f, Time.time * 0.5f);
-            Color c = sr.material.color;
+            var c = sr.material.color;
             c.a = Mathf.Lerp(0.3f, 1f, flicker);
             sr.material.color = c;
         }
