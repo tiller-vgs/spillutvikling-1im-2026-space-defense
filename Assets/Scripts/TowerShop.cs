@@ -9,6 +9,11 @@ public class TowerShop : MonoBehaviour
     string selectedTowerId = null;
     Text selectedLabel;
     TowerPlacement placement;
+    RectTransform panelRect;
+    Text shopTabText;
+    Image shopTabImg;
+    GameObject placementHud;
+    float currentX = 200f;
 
     void Awake()
     {
@@ -37,13 +42,65 @@ public class TowerShop : MonoBehaviour
         shopPanel = new GameObject("ShopPanel");
         shopPanel.transform.SetParent(canvasObj.transform, false);
         var panelImg = shopPanel.AddComponent<Image>();
-        panelImg.color = new Color(0.04f, 0.03f, 0.1f, 0.9f);
-        var panelRect = shopPanel.GetComponent<RectTransform>();
+        panelImg.color = new Color(0.04f, 0.03f, 0.1f, 0.95f);
+        panelRect = shopPanel.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(1, 0);
         panelRect.anchorMax = new Vector2(1, 1);
         panelRect.pivot = new Vector2(1, 0.5f);
-        panelRect.anchoredPosition = Vector2.zero;
-        panelRect.sizeDelta = new Vector2(200, 0);
+        panelRect.anchoredPosition = new Vector2(currentX, 0);
+        panelRect.sizeDelta = new Vector2(240, 0);
+
+        var arrowObj = new GameObject("ShopTab");
+        arrowObj.transform.SetParent(shopPanel.transform, false);
+        shopTabImg = arrowObj.AddComponent<Image>();
+        shopTabImg.color = new Color(0.1f, 0.4f, 0.8f, 0.6f);
+        var arRect = arrowObj.GetComponent<RectTransform>();
+        arRect.anchorMin = new Vector2(0, 0.5f);
+        arRect.anchorMax = new Vector2(0, 0.5f);
+        arRect.pivot = new Vector2(1, 0.5f);
+        arRect.anchoredPosition = Vector2.zero;
+        arRect.sizeDelta = new Vector2(25, 600);
+
+        var shopTextObj = new GameObject("ShopText");
+        shopTextObj.transform.SetParent(arrowObj.transform, false);
+        shopTabText = shopTextObj.AddComponent<Text>();
+        shopTabText.text = "S\n\nH\n\nO\n\nP";
+        shopTabText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        shopTabText.fontSize = 18;
+        shopTabText.color = new Color(1, 1, 1, 0.9f);
+        shopTabText.fontStyle = FontStyle.Bold;
+        shopTabText.alignment = TextAnchor.MiddleCenter;
+        shopTabText.lineSpacing = 0.6f;
+        var stRect = shopTextObj.GetComponent<RectTransform>();
+        stRect.anchorMin = Vector2.zero;
+        stRect.anchorMax = Vector2.one;
+        stRect.sizeDelta = Vector2.zero;
+
+        placementHud = new GameObject("PlacementHUD");
+        placementHud.transform.SetParent(canvasObj.transform, false);
+        var hudImg = placementHud.AddComponent<Image>();
+        hudImg.color = new Color(0, 0, 0, 0.7f);
+        var hRect = placementHud.GetComponent<RectTransform>();
+        hRect.anchorMin = new Vector2(0.5f, 1);
+        hRect.anchorMax = new Vector2(0.5f, 1);
+        hRect.pivot = new Vector2(0.5f, 1);
+        hRect.anchoredPosition = new Vector2(0, -20);
+        hRect.sizeDelta = new Vector2(400, 50);
+
+        var hTextObj = new GameObject("HUDText");
+        hTextObj.transform.SetParent(placementHud.transform, false);
+        var hText = hTextObj.AddComponent<Text>();
+        hText.text = "Right-click to cancel placement";
+        hText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        hText.fontSize = 20;
+        hText.color = new Color(0.3f, 0.8f, 1f, 0.95f);
+        hText.alignment = TextAnchor.MiddleCenter;
+        hText.fontStyle = FontStyle.Bold;
+        var htRect = hTextObj.GetComponent<RectTransform>();
+        htRect.anchorMin = Vector2.zero;
+        htRect.anchorMax = Vector2.one;
+        htRect.sizeDelta = Vector2.zero;
+        placementHud.SetActive(false);
 
         CreateLabel(shopPanel.transform, "TOWERS", 24, new Vector2(100, -25),
             new Color(0.3f, 0.7f, 1f), FontStyle.Bold);
@@ -144,7 +201,28 @@ public class TowerShop : MonoBehaviour
 
     void Update()
     {
-        if (Mouse.current != null && Mouse.current.rightButton.wasPressedThisFrame)
+        float targetX = 200f;
+        Vector2 mousePos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+        
+        bool isOverVisibleTab = mousePos.x > Screen.width - (240f - currentX);
+        bool isPlacing = (selectedTowerId != null);
+        if (placementHud != null) placementHud.SetActive(isPlacing);
+
+        if (isOverVisibleTab && !isPlacing)
+            targetX = 0f;
+
+        currentX = Mathf.Lerp(currentX, targetX, Time.deltaTime * 8f);
+        if (panelRect != null)
+            panelRect.anchoredPosition = new Vector2(currentX, 0);
+
+        if (shopTabText != null)
+        {
+            float alpha = Mathf.Clamp01((currentX - 50f) / 100f);
+            shopTabText.color = new Color(1, 1, 1, alpha * 0.9f);
+            if (shopTabImg != null) shopTabImg.color = new Color(0.1f, 0.4f, 0.8f, alpha * 0.6f);
+        }
+
+        if (UnityEngine.InputSystem.Mouse.current.rightButton.wasPressedThisFrame)
         {
             if (placement != null)
                 placement.CancelPlacing();

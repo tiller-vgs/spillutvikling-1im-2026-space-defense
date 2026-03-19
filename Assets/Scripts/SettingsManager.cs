@@ -7,6 +7,7 @@ public static class SettingsManager
     public static bool fpsCounterOn = false;
     public static bool musicOn = true;
     public static float musicVolume = 0.3f;
+    public static bool fullscreen = true;
 
     public static void Load()
     {
@@ -15,6 +16,7 @@ public static class SettingsManager
         fpsCounterOn = PlayerPrefs.GetInt("fpsCounterOn", 0) == 1;
         musicOn = PlayerPrefs.GetInt("musicOn", 1) == 1;
         musicVolume = PlayerPrefs.GetFloat("musicVolume", 0.3f);
+        fullscreen = PlayerPrefs.GetInt("fullscreen", 1) == 1;
     }
 
     public static void Save()
@@ -24,6 +26,7 @@ public static class SettingsManager
         PlayerPrefs.SetInt("fpsCounterOn", fpsCounterOn ? 1 : 0);
         PlayerPrefs.SetInt("musicOn", musicOn ? 1 : 0);
         PlayerPrefs.SetFloat("musicVolume", musicVolume);
+        PlayerPrefs.SetInt("fullscreen", fullscreen ? 1 : 0);
         PlayerPrefs.Save();
     }
 
@@ -39,5 +42,10 @@ public static class SettingsManager
     {
         if (FPSCounter.instance != null)
             FPSCounter.instance.Toggle(fpsCounterOn);
+    }
+
+    public static void ApplyFullscreen()
+    {
+        Screen.fullScreen = fullscreen;
     }
 }

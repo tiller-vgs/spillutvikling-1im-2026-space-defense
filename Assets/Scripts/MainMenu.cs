@@ -10,6 +10,7 @@ public class MainMenu : MonoBehaviour
     GameObject backgroundLayer;
     VideoPlayer videoPlayer;
     RawImage bgImage;
+    Toggle fullscreenToggle;
 
     void Start()
     {
@@ -18,10 +19,21 @@ public class MainMenu : MonoBehaviour
         Time.timeScale = 0;
         BuildMenuUI();
         BuildSettingsUI();
-        settingsPanel.SetActive(false);
         Invoke("ApplyFPSCounterState", 0.1f);
         
         if (GameMusic.instance != null) GameMusic.instance.PlayMenuMusic();
+        SettingsManager.ApplyFullscreen();
+        settingsPanel.SetActive(false);
+    }
+
+    void Update()
+    {
+        if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f11Key.wasPressedThisFrame)
+        {
+            SettingsManager.fullscreen = !Screen.fullScreen;
+            SettingsManager.ApplyFullscreen();
+            if (fullscreenToggle != null) fullscreenToggle.isOn = SettingsManager.fullscreen;
+        }
     }
 
     void ApplyFPSCounterState()
@@ -163,14 +175,45 @@ public class MainMenu : MonoBehaviour
             if (volValueText != null) volValueText.text = Mathf.RoundToInt(val * 100) + "%";
         });
 
+        CreateText(settingsPanel.transform, "Fullscreen", 24,
+            new Vector2(0.35f, 0.58f), Color.white);
+
+        var fullToggleObj = new GameObject("FullToggle");
+        fullToggleObj.transform.SetParent(settingsPanel.transform, false);
+        var fullToggleRect = fullToggleObj.AddComponent<RectTransform>();
+        fullToggleRect.anchorMin = new Vector2(0.6f, 0.57f);
+        fullToggleRect.anchorMax = new Vector2(0.6f, 0.59f);
+        fullToggleRect.sizeDelta = new Vector2(40, 40);
+        fullToggleObj.AddComponent<Image>().color = new Color(0.05f, 0.2f, 0.3f);
+
+        fullscreenToggle = fullToggleObj.AddComponent<Toggle>();
+
+        var fullCheckObj = new GameObject("Checkmark");
+        fullCheckObj.transform.SetParent(fullToggleObj.transform, false);
+        var fullCheckImg = fullCheckObj.AddComponent<Image>();
+        fullCheckImg.color = new Color(0.1f, 0.9f, 0.5f);
+        var fullCheckRect = fullCheckObj.GetComponent<RectTransform>();
+        fullCheckRect.anchorMin = new Vector2(0.15f, 0.15f);
+        fullCheckRect.anchorMax = new Vector2(0.85f, 0.85f);
+        fullCheckRect.offsetMin = Vector2.zero;
+        fullCheckRect.offsetMax = Vector2.zero;
+
+        fullscreenToggle.graphic = fullCheckImg;
+        fullscreenToggle.isOn = SettingsManager.fullscreen;
+
+        fullscreenToggle.onValueChanged.AddListener((val) => {
+            SettingsManager.fullscreen = val;
+            SettingsManager.ApplyFullscreen();
+        });
+
         CreateText(settingsPanel.transform, "FPS Counter", 24,
-            new Vector2(0.35f, 0.55f), Color.white);
+            new Vector2(0.35f, 0.48f), Color.white);
 
         var fpsToggleObj = new GameObject("FPSToggle");
         fpsToggleObj.transform.SetParent(settingsPanel.transform, false);
         var fpsToggleRect = fpsToggleObj.AddComponent<RectTransform>();
-        fpsToggleRect.anchorMin = new Vector2(0.6f, 0.54f);
-        fpsToggleRect.anchorMax = new Vector2(0.6f, 0.56f);
+        fpsToggleRect.anchorMin = new Vector2(0.6f, 0.47f);
+        fpsToggleRect.anchorMax = new Vector2(0.6f, 0.49f);
         fpsToggleRect.sizeDelta = new Vector2(40, 40);
         fpsToggleObj.AddComponent<Image>().color = new Color(0.05f, 0.2f, 0.3f);
 
@@ -196,13 +239,13 @@ public class MainMenu : MonoBehaviour
         });
 
         CreateText(settingsPanel.transform, "Cap FPS", 24,
-            new Vector2(0.35f, 0.43f), Color.white);
+            new Vector2(0.35f, 0.38f), Color.white);
 
         var capToggleObj = new GameObject("CapToggle");
         capToggleObj.transform.SetParent(settingsPanel.transform, false);
         var capToggleRect = capToggleObj.AddComponent<RectTransform>();
-        capToggleRect.anchorMin = new Vector2(0.6f, 0.42f);
-        capToggleRect.anchorMax = new Vector2(0.6f, 0.44f);
+        capToggleRect.anchorMin = new Vector2(0.6f, 0.37f);
+        capToggleRect.anchorMax = new Vector2(0.6f, 0.39f);
         capToggleRect.sizeDelta = new Vector2(40, 40);
         capToggleObj.AddComponent<Image>().color = new Color(0.05f, 0.2f, 0.3f);
 
@@ -222,17 +265,17 @@ public class MainMenu : MonoBehaviour
         capToggle.isOn = SettingsManager.fpsCapped;
 
         CreateText(settingsPanel.transform, "FPS Limit", 24,
-            new Vector2(0.35f, 0.32f), Color.white);
+            new Vector2(0.35f, 0.28f), Color.white);
 
         var capValObj = CreateText(settingsPanel.transform, SettingsManager.fpsCap + " FPS", 22,
-            new Vector2(0.72f, 0.32f), new Color(0.1f, 0.9f, 0.5f));
+            new Vector2(0.72f, 0.28f), new Color(0.1f, 0.9f, 0.5f));
         var capValueText = capValObj.GetComponent<Text>();
 
         var sliderObj = new GameObject("FPSSlider");
         sliderObj.transform.SetParent(settingsPanel.transform, false);
         var sliderRect = sliderObj.AddComponent<RectTransform>();
-        sliderRect.anchorMin = new Vector2(0.3f, 0.25f);
-        sliderRect.anchorMax = new Vector2(0.7f, 0.27f);
+        sliderRect.anchorMin = new Vector2(0.3f, 0.21f);
+        sliderRect.anchorMax = new Vector2(0.7f, 0.23f);
         sliderRect.offsetMin = Vector2.zero;
         sliderRect.offsetMax = Vector2.zero;
         sliderObj.AddComponent<Image>().color = new Color(0.05f, 0.15f, 0.2f);

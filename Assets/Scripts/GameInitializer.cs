@@ -50,6 +50,8 @@ public class GameInitializer : MonoBehaviour
         cam.backgroundColor = new Color(0.02f, 0.01f, 0.06f);
         cam.orthographicSize = 6;
         cam.clearFlags = CameraClearFlags.SolidColor;
+        cam.transform.position = new Vector3(0, 0, -10);
+        SettingsManager.ApplyFullscreen();
     }
 
     void CreateBackground()
