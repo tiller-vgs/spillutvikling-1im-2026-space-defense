@@ -5,6 +5,7 @@ public class EnemyMovement : MonoBehaviour
     public float speed = 3f;
     public float maxHealth = 50f;
     public int reward = 10;
+    public string serverEnemyId = "";
 
     float currentHealth;
     Transform[] waypoints;
@@ -47,17 +48,38 @@ public class EnemyMovement : MonoBehaviour
             healthBar.SetHealth(1f);
     }
 
+    public void SetupFromServer(string serverId, float serverMaxHealth, float serverSpeed, int serverReward)
+    {
+        serverEnemyId = serverId;
+        maxHealth = serverMaxHealth;
+        currentHealth = serverMaxHealth;
+        speed = serverSpeed;
+        reward = serverReward;
+    }
+
     public void TakeDamage(float dmg)
     {
         currentHealth -= dmg;
         if (healthBar != null)
             healthBar.SetHealth(currentHealth / maxHealth);
 
-        // enemy død
         if (currentHealth <= 0)
         {
-            if (CurrencyManager.instance != null)
-                CurrencyManager.instance.AddMoney(reward);
+            if (ServerManager.instance != null && ServerManager.instance.connected && serverEnemyId != "")
+            {
+                ServerManager.instance.ReportEnemyKilled(serverEnemyId, (resp) =>
+                {
+                    if (resp != null && resp.ok)
+                    {
+                        // server already synced money via ServerManager
+                    }
+                });
+            }
+            else
+            {
+                if (CurrencyManager.instance != null)
+                    CurrencyManager.instance.AddMoney(reward);
+            }
 
             SpawnDeathEffect();
             Destroy(gameObject);
@@ -104,9 +126,19 @@ public class EnemyMovement : MonoBehaviour
             
             if (currentWP >= waypoints.Length)
             {
-                PlayerHealth ph = Object.FindFirstObjectByType<PlayerHealth>();
-                if (ph != null)
-                    ph.TakeDamage(10); // skADA
+                if (ServerManager.instance != null && ServerManager.instance.connected && serverEnemyId != "")
+                {
+                    ServerManager.instance.ReportEnemyLeaked(serverEnemyId, (resp) =>
+                    {
+                        // server already synced health via ServerManager
+                    });
+                }
+                else
+                {
+                    PlayerHealth ph = Object.FindFirstObjectByType<PlayerHealth>();
+                    if (ph != null)
+                        ph.TakeDamage(10);
+                }
 
                 Destroy(gameObject);
             }

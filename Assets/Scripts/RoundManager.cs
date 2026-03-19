@@ -14,6 +14,10 @@ public class RoundManager : MonoBehaviour
     int enemiesToSpawn = 0;
     float spawnTimer = 0;
 
+    // server enemy data for this round
+    ServerManager.RoundEnemy[] serverEnemies;
+    int serverEnemyIndex = 0;
+
     Text roundText;
     Text roundAnnouncerText;
     GameObject startButton;
@@ -132,20 +136,42 @@ public class RoundManager : MonoBehaviour
 
     public void StartNextRound()
     {
-        // prevent double trigger
         if (roundActive) return;
 
-        currentRound++;
-        roundActive = true;
-        enemiesSpawned = 0;
-        spawnTimer = 0;
+        if (ServerManager.instance != null && ServerManager.instance.connected)
+        {
+            ServerManager.instance.StartRound((resp) =>
+            {
+                if (resp != null && resp.ok)
+                {
+                    currentRound = resp.round;
+                    roundActive = true;
+                    enemiesSpawned = 0;
+                    spawnTimer = 0;
+                    enemiesToSpawn = resp.totalEnemies;
+                    serverEnemies = resp.enemies;
+                    serverEnemyIndex = 0;
 
-        enemiesToSpawn = GetEnemyCount(currentRound);
+                    roundText.text = "ROUND " + currentRound;
+                    startButton.SetActive(false);
+                    StartCoroutine(ShowRoundAnnouncement("ROUND " + currentRound));
+                }
+            });
+        }
+        else
+        {
+            currentRound++;
+            roundActive = true;
+            enemiesSpawned = 0;
+            spawnTimer = 0;
 
-        roundText.text = "ROUND " + currentRound;
-        startButton.SetActive(false);
+            enemiesToSpawn = GetEnemyCount(currentRound);
+            serverEnemies = null;
 
-        StartCoroutine(ShowRoundAnnouncement("ROUND " + currentRound));
+            roundText.text = "ROUND " + currentRound;
+            startButton.SetActive(false);
+            StartCoroutine(ShowRoundAnnouncement("ROUND " + currentRound));
+        }
     }
 
     int GetEnemyCount(int round)
@@ -155,7 +181,6 @@ public class RoundManager : MonoBehaviour
 
     string GetEnemyTypeForSpawn(int round, int index)
     {
-        // hardcoded boss spawn at end of round 5, 10, etc
         if (round >= 5 && round % 5 == 0 && index == enemiesToSpawn - 1)
             return "boss";
 
@@ -248,11 +273,22 @@ public class RoundManager : MonoBehaviour
             if (spawner == null) return;
         }
 
-        string type = GetEnemyTypeForSpawn(currentRound, enemiesSpawned);
-        float healthMult = GetHealthMultiplier(currentRound);
-        int rewardMult = GetRewardMultiplier(currentRound);
+        if (serverEnemies != null && serverEnemyIndex < serverEnemies.Length)
+        {
+            var se = serverEnemies[serverEnemyIndex];
+            float healthMult = GetHealthMultiplier(currentRound);
+            int rewardMult = GetRewardMultiplier(currentRound);
+            spawner.SpawnEnemyOfTypeWithServerId(se.type, healthMult, rewardMult, se.serverId);
+            serverEnemyIndex++;
+        }
+        else
+        {
+            string type = GetEnemyTypeForSpawn(currentRound, enemiesSpawned);
+            float healthMult = GetHealthMultiplier(currentRound);
+            int rewardMult = GetRewardMultiplier(currentRound);
+            spawner.SpawnEnemyOfType(type, healthMult, rewardMult);
+        }
 
-        spawner.SpawnEnemyOfType(type, healthMult, rewardMult);
         enemiesSpawned++;
     }
 
@@ -260,19 +296,23 @@ public class RoundManager : MonoBehaviour
     {
         roundActive = false;
 
-        // calculate end of round cash bonus
-        int bonus = 0;
-        if (currentRound <= 12)
-            bonus = 10 + currentRound * 2;
-        else if (currentRound <= 18)
-            bonus = 34 + (currentRound - 12);
-        else
-            bonus = 40 + (currentRound - 18) * 5;
+        // only give local bonus if NOT connected to server
+        // (server already gave the bonus via enemy-killed responses)
+        if (ServerManager.instance == null || !ServerManager.instance.connected)
+        {
+            int bonus = 0;
+            if (currentRound <= 12)
+                bonus = 10 + currentRound * 2;
+            else if (currentRound <= 18)
+                bonus = 34 + (currentRound - 12);
+            else
+                bonus = 40 + (currentRound - 18) * 5;
 
-        bonus = Mathf.Min(bonus, 100);
+            bonus = Mathf.Min(bonus, 100);
 
-        if (CurrencyManager.instance != null)
-            CurrencyManager.instance.AddMoney(bonus);
+            if (CurrencyManager.instance != null)
+                CurrencyManager.instance.AddMoney(bonus);
+        }
 
         if (autoStart)
             Invoke("StartNextRound", 2f);

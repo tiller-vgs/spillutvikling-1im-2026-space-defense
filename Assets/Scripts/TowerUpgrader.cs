@@ -19,7 +19,6 @@ public class TowerUpgrader : MonoBehaviour
     {
         if (Mouse.current == null) return;
 
-        // click detection for upgrades
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
@@ -145,23 +144,53 @@ public class TowerUpgrader : MonoBehaviour
     void DoUpgrade()
     {
         if (!tower.CanUpgrade()) return;
-        int cost = tower.GetUpgradeCost();
-        if (CurrencyManager.instance != null && CurrencyManager.instance.SpendMoney(cost))
+
+        if (ServerManager.instance != null && ServerManager.instance.connected && tower.serverTowerId != "")
         {
-            tower.Upgrade();
-            HidePanel();
-            ShowUpgradePanel();
+            ServerManager.instance.UpgradeTower(tower.serverTowerId, (resp) =>
+            {
+                if (resp != null && resp.ok)
+                {
+                    tower.Upgrade();
+                    HidePanel();
+                    ShowUpgradePanel();
+                }
+            });
+        }
+        else
+        {
+            int cost = tower.GetUpgradeCost();
+            if (CurrencyManager.instance != null && CurrencyManager.instance.SpendMoney(cost))
+            {
+                tower.Upgrade();
+                HidePanel();
+                ShowUpgradePanel();
+            }
         }
     }
 
     void SellTower()
     {
-        int sellValue = tower.GetSellValue();
-        if (CurrencyManager.instance != null)
-            CurrencyManager.instance.AddMoney(sellValue);
+        if (ServerManager.instance != null && ServerManager.instance.connected && tower.serverTowerId != "")
+        {
+            ServerManager.instance.SellTower(tower.serverTowerId, (resp) =>
+            {
+                if (resp != null && resp.ok)
+                {
+                    HidePanel();
+                    Destroy(gameObject);
+                }
+            });
+        }
+        else
+        {
+            int sellValue = tower.GetSellValue();
+            if (CurrencyManager.instance != null)
+                CurrencyManager.instance.AddMoney(sellValue);
 
-        HidePanel();
-        Destroy(gameObject);
+            HidePanel();
+            Destroy(gameObject);
+        }
     }
 
     void HidePanel()

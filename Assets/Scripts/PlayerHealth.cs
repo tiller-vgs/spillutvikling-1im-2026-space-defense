@@ -82,8 +82,25 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
-        if (currentHealth < 0) currentHealth = 0; // ikke nåkka bugs
+        if (currentHealth < 0) currentHealth = 0;
 
+        RefreshUI();
+
+        if (currentHealth <= 0)
+        {
+            var gameOver = Object.FindFirstObjectByType<GameOverUI>();
+            if (gameOver != null)
+                gameOver.Show();
+        }
+    }
+
+    public void ForceUpdateDisplay()
+    {
+        RefreshUI();
+    }
+
+    void RefreshUI()
+    {
         float fill = (float)currentHealth / maxHealth;
 
         if (healthFill != null)
@@ -93,12 +110,5 @@ public class PlayerHealth : MonoBehaviour
         }
         if (healthText != null)
             healthText.text = currentHealth + " / " + maxHealth;
-
-        if (currentHealth <= 0)
-        {
-            var gameOver = Object.FindFirstObjectByType<GameOverUI>();
-            if (gameOver != null)
-                gameOver.Show();
-        }
     }
 }

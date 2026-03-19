@@ -33,7 +33,7 @@ public class TowerPlacement : MonoBehaviour
         var rangeSr = rangeObj.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
         rangeSr.sortingOrder = 19;
-        rangeObj.transform.localScale = Vector3.one * data.range * 2f / 0.5f;
+        rangeObj.transform.localScale = Vector3.one * currentTower.range * 2f / 0.5f;
     }
 
     public void CancelPlacing()
@@ -92,7 +92,6 @@ public class TowerPlacement : MonoBehaviour
 
     bool IsOnPath(Vector3 pos)
     {
-        // sjekk om vi plassere for nærme enemy path
         if (enemyPath == null)
         {
             enemyPath = Object.FindFirstObjectByType<EnemyPath>();
@@ -136,20 +135,49 @@ public class TowerPlacement : MonoBehaviour
 
     void PlaceTower(Vector3 pos)
     {
-        if (CurrencyManager.instance == null || !CurrencyManager.instance.SpendMoney(currentTower.cost))
-            return;
+        if (CurrencyManager.instance == null) return;
 
-        var towerObj = new GameObject(currentTower.name);
-        towerObj.transform.position = pos;
-        var tower = towerObj.AddComponent<Tower>();
-        tower.Setup(currentTower);
+        if (ServerManager.instance != null && ServerManager.instance.connected)
+        {
+            string towerId = currentTower.id;
+            TowerData towerDataCopy = currentTower;
+            Vector3 placePos = pos;
 
-        towerObj.AddComponent<CircleCollider2D>().radius = 0.3f;
-        towerObj.AddComponent<TowerUpgrader>();
+            ServerManager.instance.PlaceTower(towerId, pos.x, pos.y, (resp) =>
+            {
+                if (resp != null && resp.ok)
+                {
+                    var towerObj = new GameObject(towerDataCopy.name);
+                    towerObj.transform.position = placePos;
+                    var tower = towerObj.AddComponent<Tower>();
+                    tower.Setup(towerDataCopy);
+                    tower.serverTowerId = resp.serverId;
 
-        CancelPlacing();
-        var shop = Object.FindFirstObjectByType<TowerShop>();
-        if (shop != null) shop.CancelSelection();
+                    towerObj.AddComponent<CircleCollider2D>().radius = 0.3f;
+                    towerObj.AddComponent<TowerUpgrader>();
+                }
+            });
+
+            CancelPlacing();
+            var shop = Object.FindFirstObjectByType<TowerShop>();
+            if (shop != null) shop.CancelSelection();
+        }
+        else
+        {
+            if (!CurrencyManager.instance.SpendMoney(currentTower.cost)) return;
+
+            var towerObj = new GameObject(currentTower.name);
+            towerObj.transform.position = pos;
+            var tower = towerObj.AddComponent<Tower>();
+            tower.Setup(currentTower);
+
+            towerObj.AddComponent<CircleCollider2D>().radius = 0.3f;
+            towerObj.AddComponent<TowerUpgrader>();
+
+            CancelPlacing();
+            var shop = Object.FindFirstObjectByType<TowerShop>();
+            if (shop != null) shop.CancelSelection();
+        }
     }
 
     Sprite MakePreviewSprite()

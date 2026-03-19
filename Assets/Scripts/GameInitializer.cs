@@ -195,6 +195,7 @@ public class GameInitializer : MonoBehaviour
         uiObj.AddComponent<TowerShop>();
         uiObj.AddComponent<TowerPlacement>();
         uiObj.AddComponent<RoundManager>();
+        uiObj.AddComponent<ServerManager>();
 
         var eventSystem = new GameObject("EventSystem");
         eventSystem.AddComponent<EventSystem>();

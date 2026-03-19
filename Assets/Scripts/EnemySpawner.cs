@@ -6,7 +6,11 @@ public class EnemySpawner : MonoBehaviour
 
     public void SpawnEnemyOfType(string type, float healthMultiplier, int rewardMultiplier)
     {
-        // fallback hvis path ikke er koblet
+        SpawnEnemyOfTypeWithServerId(type, healthMultiplier, rewardMultiplier, "");
+    }
+
+    public void SpawnEnemyOfTypeWithServerId(string type, float healthMultiplier, int rewardMultiplier, string serverId)
+    {
         if (path == null)
         {
             path = Object.FindFirstObjectByType<EnemyPath>();
@@ -66,6 +70,9 @@ public class EnemySpawner : MonoBehaviour
 
         var movement = enemy.AddComponent<EnemyMovement>();
         movement.Setup(data, path.waypoints, healthMultiplier, rewardMultiplier);
+
+        if (serverId != "")
+            movement.serverEnemyId = serverId;
     }
 
     Sprite MakeSquareSprite()

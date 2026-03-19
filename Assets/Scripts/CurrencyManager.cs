@@ -5,7 +5,6 @@ public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager instance;
     
-    // starting cash
     public int dollars = 255;
 
     Text dollarText;
@@ -65,12 +64,16 @@ public class CurrencyManager : MonoBehaviour
 
     public bool SpendMoney(int amount)
     {
-        // Ikke nok penga
         if (dollars < amount) return false;
         
         dollars -= amount;
         UpdateDisplay();
         return true;
+    }
+
+    public void ForceUpdateDisplay()
+    {
+        UpdateDisplay();
     }
 
     void UpdateDisplay()

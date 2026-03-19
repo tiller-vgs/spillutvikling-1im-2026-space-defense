@@ -6,6 +6,7 @@ public class Tower : MonoBehaviour
     public TowerData data;
     public int level = 1;
     public const int MAX_LEVEL = 5;
+    public string serverTowerId = "";
     float fireTimer;
     LineRenderer laserLine;
     AudioSource audioSource;
