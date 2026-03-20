@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class GameInitializer : MonoBehaviour
 {
@@ -25,7 +27,7 @@ public class GameInitializer : MonoBehaviour
     {
         SetupMusic();
 
-        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Background", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas", "SpawnDoor", "BaseDoor", "HealthCanvas" };
+        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Background", "BackgroundCanvas", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas", "SpawnDoor", "BaseDoor", "HealthCanvas" };
         foreach (string objName in oldObjects)
         {
             var old = GameObject.Find(objName);
@@ -56,14 +58,37 @@ public class GameInitializer : MonoBehaviour
 
     void CreateBackground()
     {
-        var bg = new GameObject("Background");
-        var vp = bg.AddComponent<UnityEngine.Video.VideoPlayer>();
-        vp.playOnAwake = true;
+        var bgCanvasObj = new GameObject("BackgroundCanvas");
+        var canvas = bgCanvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        canvas.worldCamera = Camera.main;
+        canvas.planeDistance = 90;
+        canvas.sortingOrder = -100;
+
+        var bg = new GameObject("BackgroundVideo");
+        bg.transform.SetParent(bgCanvasObj.transform, false);
+        var bgRect = bg.AddComponent<RectTransform>();
+        bgRect.anchorMin = Vector2.zero;
+        bgRect.anchorMax = Vector2.one;
+        bgRect.offsetMin = Vector2.zero;
+        bgRect.offsetMax = Vector2.zero;
+
+        var rawImage = bg.AddComponent<RawImage>();
+        rawImage.color = Color.black;
+
+        var vp = bg.AddComponent<VideoPlayer>();
+        vp.playOnAwake = false;
         vp.isLooping = true;
-        vp.renderMode = UnityEngine.Video.VideoRenderMode.CameraFarPlane;
-        vp.targetCamera = Camera.main;
-        vp.clip = Resources.Load<UnityEngine.Video.VideoClip>("GameBk");
-        vp.audioOutputMode = UnityEngine.Video.VideoAudioOutputMode.None;
+        vp.renderMode = VideoRenderMode.APIOnly;
+        vp.audioOutputMode = VideoAudioOutputMode.None;
+        vp.clip = Resources.Load<VideoClip>("GameBk");
+        
+        vp.prepareCompleted += (p) => {
+            rawImage.texture = p.texture;
+            rawImage.color = Color.white;
+            p.Play();
+        };
+        vp.Prepare();
     }
 
 

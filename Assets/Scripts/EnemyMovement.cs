@@ -71,7 +71,6 @@ public class EnemyMovement : MonoBehaviour
                 {
                     if (resp != null && resp.ok)
                     {
-                        // server already synced money via ServerManager
                     }
                 });
             }
@@ -130,7 +129,6 @@ public class EnemyMovement : MonoBehaviour
                 {
                     ServerManager.instance.ReportEnemyLeaked(serverEnemyId, (resp) =>
                     {
-                        // server already synced health via ServerManager
                     });
                 }
                 else
