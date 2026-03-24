@@ -27,7 +27,6 @@ public class GameInitializer : MonoBehaviour
     {
         SetupMusic();
 
-        // 1. Target all Canvas components specifically (to handle inactive ghost layers)
         string[] canvasTargets = { 
             "RoundCanvas", "HealthCanvas", "CurrencyCanvas", "ShopCanvas", 
             "PauseCanvas", "GameOverCanvas", "MenuCanvas", "UpgradePanel", 
@@ -44,7 +43,6 @@ public class GameInitializer : MonoBehaviour
             }
         }
 
-        // 2. Clean up major managers and EventSystems
         string[] managers = { "UIManager", "GameManager", "EnemySpawner", "EventSystem" };
         var allObjs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var o in allObjs) {
@@ -57,21 +55,18 @@ public class GameInitializer : MonoBehaviour
             }
         }
 
-        // 3. Clean up other scene elements that are definitely recreated by code
         string[] sceneObjects = { "EnemyPath", "PathParticles", "SpawnDoor", "BaseDoor" };
         foreach (string objName in sceneObjects) {
             var old = GameObject.Find(objName);
             if (old != null) DestroyImmediate(old);
         }
 
-        // 4. Handle duplicates of GameInitializer itself
         var initializers = Object.FindObjectsByType<GameInitializer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var init in initializers)
         {
             if (init != this) DestroyImmediate(init.gameObject);
         }
 
-        // 5. Cleanup dynamic entities
         foreach (var enemy in Object.FindObjectsByType<EnemyMovement>(FindObjectsInactive.Include, FindObjectsSortMode.None)) DestroyImmediate(enemy.gameObject);
         foreach (var tower in Object.FindObjectsByType<Tower>(FindObjectsInactive.Include, FindObjectsSortMode.None)) DestroyImmediate(tower.gameObject);
 
