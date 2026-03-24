@@ -27,15 +27,53 @@ public class GameInitializer : MonoBehaviour
     {
         SetupMusic();
 
-        string[] oldObjects = { "UIManager", "GameManager", "EnemySpawner", "BackgroundBase", "Background", "BackgroundCanvas", "Stars", "Nebulas", "EnemyPath", "PathParticles", "EventSystem", "RoundCanvas", "SpawnDoor", "BaseDoor", "HealthCanvas" };
-        foreach (string objName in oldObjects)
+        // 1. Target all Canvas components specifically (to handle inactive ghost layers)
+        string[] canvasTargets = { 
+            "RoundCanvas", "HealthCanvas", "CurrencyCanvas", "ShopCanvas", 
+            "PauseCanvas", "GameOverCanvas", "MenuCanvas", "UpgradePanel", 
+            "BackgroundCanvas", "TowerPreview" 
+        };
+        var allCanvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var c in allCanvases)
         {
+            foreach (string name in canvasTargets) {
+                if (c.name == name) {
+                    DestroyImmediate(c.gameObject);
+                    break;
+                }
+            }
+        }
+
+        // 2. Clean up major managers and EventSystems
+        string[] managers = { "UIManager", "GameManager", "EnemySpawner", "EventSystem" };
+        var allObjs = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var o in allObjs) {
+            if (o == gameObject) continue;
+            foreach (string mName in managers) {
+                if (o.name == mName) {
+                    DestroyImmediate(o);
+                    break;
+                }
+            }
+        }
+
+        // 3. Clean up other scene elements that are definitely recreated by code
+        string[] sceneObjects = { "EnemyPath", "PathParticles", "SpawnDoor", "BaseDoor" };
+        foreach (string objName in sceneObjects) {
             var old = GameObject.Find(objName);
             if (old != null) DestroyImmediate(old);
         }
 
-        foreach (var enemy in Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None)) DestroyImmediate(enemy.gameObject);
-        foreach (var tower in Object.FindObjectsByType<Tower>(FindObjectsSortMode.None)) DestroyImmediate(tower.gameObject);
+        // 4. Handle duplicates of GameInitializer itself
+        var initializers = Object.FindObjectsByType<GameInitializer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var init in initializers)
+        {
+            if (init != this) DestroyImmediate(init.gameObject);
+        }
+
+        // 5. Cleanup dynamic entities
+        foreach (var enemy in Object.FindObjectsByType<EnemyMovement>(FindObjectsInactive.Include, FindObjectsSortMode.None)) DestroyImmediate(enemy.gameObject);
+        foreach (var tower in Object.FindObjectsByType<Tower>(FindObjectsInactive.Include, FindObjectsSortMode.None)) DestroyImmediate(tower.gameObject);
 
         SetupCamera();
         CreateBackground();
@@ -43,6 +81,8 @@ public class GameInitializer : MonoBehaviour
         SetupSpawner();
         SetupDatabase();
         SetupUI();
+
+        Destroy(gameObject);
     }
 
     void SetupCamera()
