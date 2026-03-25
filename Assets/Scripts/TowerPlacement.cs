@@ -9,6 +9,29 @@ public class TowerPlacement : MonoBehaviour
     SpriteRenderer previewSr;
     bool isPlacing = false;
     EnemyPath enemyPath;
+    Sprite customSprite;
+    float baseScale = 0.5f;
+
+    Sprite GetCustomSprite(string id)
+    {
+        Sprite[] sprites = Resources.LoadAll<Sprite>("tower_new 1");
+        string targetRef = "";
+        
+        switch (id)
+        {
+            case "laser": targetRef = "tower_new 1_2"; break;
+            case "cannon": targetRef = "tower_new 1_3"; break;
+            case "sniper": targetRef = "tower_new 1_6"; break;
+            case "frost": targetRef = "tower_new 1_4"; break;
+            case "missile": targetRef = "tower_new 1_5"; break;
+        }
+
+        foreach (var s in sprites)
+        {
+            if (s.name.Equals(targetRef, System.StringComparison.OrdinalIgnoreCase)) return s;
+        }
+        return null;
+    }
 
     void Start()
     {
@@ -21,11 +44,14 @@ public class TowerPlacement : MonoBehaviour
         currentTower = data;
         isPlacing = true;
 
+        customSprite = GetCustomSprite(data.id);
+        baseScale = 2.5f;
+
         preview = new GameObject("TowerPreview");
         previewSr = preview.AddComponent<SpriteRenderer>();
-        previewSr.sprite = MakePreviewSprite();
+        previewSr.sprite = customSprite;
         previewSr.sortingOrder = 20;
-        preview.transform.localScale = Vector3.one * 0.5f;
+        preview.transform.localScale = Vector3.one * baseScale;
 
         var rangeObj = new GameObject("RangePreview");
         rangeObj.transform.parent = preview.transform;
@@ -33,7 +59,7 @@ public class TowerPlacement : MonoBehaviour
         var rangeSr = rangeObj.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
         rangeSr.sortingOrder = 19;
-        rangeObj.transform.localScale = Vector3.one * currentTower.range * 2f / 0.5f;
+        rangeObj.transform.localScale = Vector3.one * (currentTower.range * 2f / baseScale);
     }
 
     public void CancelPlacing()
@@ -59,9 +85,7 @@ public class TowerPlacement : MonoBehaviour
 
         if (canPlace)
         {
-            Color c = currentTower.color.ToColor();
-            c.a = 0.7f;
-            previewSr.color = c;
+            previewSr.color = new Color(1f, 1f, 1f, 0.7f);
             var rangeRend = preview.GetComponentsInChildren<SpriteRenderer>();
             if (rangeRend.Length > 1)
             {
@@ -178,29 +202,6 @@ public class TowerPlacement : MonoBehaviour
             var shop = Object.FindFirstObjectByType<TowerShop>();
             if (shop != null) shop.CancelSelection();
         }
-    }
-
-    Sprite MakePreviewSprite()
-    {
-        int size = 32;
-        var tex = new Texture2D(size, size);
-        tex.filterMode = FilterMode.Bilinear;
-        Color[] pixels = new Color[size * size];
-        float center = size / 2f;
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float dx = Mathf.Abs(x - center) / center;
-                float dy = Mathf.Abs(y - center) / center;
-                float dist = dx + dy;
-                float alpha = Mathf.Clamp01((1f - dist) * 4f);
-                pixels[y * size + x] = new Color(1, 1, 1, alpha);
-            }
-        }
-        tex.SetPixels(pixels);
-        tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
     }
 
     Sprite MakeCircleSprite()

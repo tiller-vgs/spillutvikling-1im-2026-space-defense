@@ -12,28 +12,39 @@ public class Tower : MonoBehaviour
     AudioSource audioSource;
     AudioClip laserSound;
     GameObject rangeCircle;
+    float baseScale = 2.5f;
+
+    Sprite GetCustomSprite()
+    {
+        Sprite[] sprites = Resources.LoadAll<Sprite>("tower_new 1");
+        string targetRef = "";
+        
+        switch (data.id)
+        {
+            case "laser": targetRef = "tower_new 1_2"; break;
+            case "cannon": targetRef = "tower_new 1_3"; break;
+            case "sniper": targetRef = "tower_new 1_6"; break;
+            case "frost": targetRef = "tower_new 1_4"; break;
+            case "missile": targetRef = "tower_new 1_5"; break;
+        }
+
+        foreach (var s in sprites)
+        {
+            if (s.name.Equals(targetRef, System.StringComparison.OrdinalIgnoreCase)) return s;
+        }
+        return null;
+    }
 
     public void Setup(TowerData towerData)
     {
         data = towerData;
+        baseScale = 2.5f;
 
         var sr = gameObject.AddComponent<SpriteRenderer>();
-        sr.sprite = MakeTowerSprite();
-        sr.color = data.color.ToColor();
+        sr.sprite = GetCustomSprite();
+        sr.color = Color.white;
         sr.sortingOrder = 8;
-        transform.localScale = Vector3.one * 0.5f;
-
-        var glow = new GameObject("Glow");
-        glow.transform.parent = transform;
-        glow.transform.localPosition = Vector3.zero;
-        glow.transform.localScale = Vector3.one * 0.6f;
-        var glowSr = glow.AddComponent<SpriteRenderer>();
-        glowSr.sprite = MakeTowerSprite();
-        Color gc = data.color.ToColor();
-        gc = Color.Lerp(gc, Color.white, 0.5f);
-        gc.a = 0.5f;
-        glowSr.color = gc;
-        glowSr.sortingOrder = 9;
+        transform.localScale = Vector3.one * baseScale;
 
         rangeCircle = new GameObject("Range");
         rangeCircle.transform.parent = transform;
@@ -44,7 +55,7 @@ public class Tower : MonoBehaviour
         rc.a = 0.08f;
         rangeSr.color = rc;
         rangeSr.sortingOrder = 1;
-        rangeCircle.transform.localScale = Vector3.one * data.range * 2f / 0.5f;
+        rangeCircle.transform.localScale = Vector3.one * (data.range * 2f / baseScale);
         rangeCircle.SetActive(false);
 
         laserLine = gameObject.AddComponent<LineRenderer>();
@@ -151,7 +162,7 @@ public class Tower : MonoBehaviour
     {
         if (!CanUpgrade()) return;
         level++;
-        transform.localScale = Vector3.one * (0.5f + level * 0.05f);
+        transform.localScale = Vector3.one * (baseScale + level * (baseScale * 0.1f));
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null)
         {
@@ -188,30 +199,6 @@ public class Tower : MonoBehaviour
     public int GetDamage()
     {
         return data.damage + (level - 1) * data.upgradeDamage;
-    }
-
-    Sprite MakeTowerSprite()
-    {
-        int size = 32;
-        var tex = new Texture2D(size, size);
-        tex.filterMode = FilterMode.Bilinear;
-        Color[] pixels = new Color[size * size];
-        float center = size / 2f;
-
-        for (int y = 0; y < size; y++)
-        {
-            for (int x = 0; x < size; x++)
-            {
-                float dx = Mathf.Abs(x - center) / center;
-                float dy = Mathf.Abs(y - center) / center;
-                float dist = dx + dy;
-                float alpha = Mathf.Clamp01((1f - dist) * 4f);
-                pixels[y * size + x] = new Color(1, 1, 1, alpha);
-            }
-        }
-        tex.SetPixels(pixels);
-        tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
     }
 
     Sprite MakeCircleSprite()
