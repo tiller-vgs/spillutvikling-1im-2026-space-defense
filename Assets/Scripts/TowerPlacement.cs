@@ -53,11 +53,16 @@ public class TowerPlacement : MonoBehaviour
         previewSr.sortingOrder = 20;
         preview.transform.localScale = Vector3.one * baseScale;
 
+        SetupGunPreview();
+
         var rangeObj = new GameObject("RangePreview");
         rangeObj.transform.parent = preview.transform;
         rangeObj.transform.localPosition = Vector3.zero;
         var rangeSr = rangeObj.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
+        Color rc = currentTower.color.ToColor();
+        rc.a = 0.08f;
+        rangeSr.color = rc;
         rangeSr.sortingOrder = 19;
         rangeObj.transform.localScale = Vector3.one * (currentTower.range * 2f / baseScale);
     }
@@ -218,12 +223,42 @@ public class TowerPlacement : MonoBehaviour
                 float dx = (x - center) / center;
                 float dy = (y - center) / center;
                 float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                float alpha = Mathf.Clamp01((1f - dist) * 3f);
+                float alpha = Mathf.Max(0, (1f - dist)); // Smoother linear falloff
                 pixels[y * size + x] = new Color(1, 1, 1, alpha);
             }
         }
         tex.SetPixels(pixels);
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+    }
+
+    void SetupGunPreview()
+    {
+        Sprite[] sprites = Resources.LoadAll<Sprite>("gun 1");
+        Sprite rawSprite = null;
+        foreach (var s in sprites)
+        {
+            if (s.name.Equals("gun 1_16", System.StringComparison.OrdinalIgnoreCase))
+            {
+                rawSprite = s;
+                break;
+            }
+        }
+
+        if (rawSprite != null)
+        {
+            Sprite gunSprite = Sprite.Create(rawSprite.texture, rawSprite.rect, new Vector2(0.5f, 0.5f), rawSprite.pixelsPerUnit);
+
+            GameObject gunPreview = new GameObject("GunPreview");
+            gunPreview.transform.parent = preview.transform;
+            
+            float gunScale = 1.5f;
+            gunPreview.transform.localScale = Vector3.one * gunScale;
+            gunPreview.transform.localPosition = new Vector3(0, 0, -0.1f);
+            
+            var sr = gunPreview.AddComponent<SpriteRenderer>();
+            sr.sprite = gunSprite;
+            sr.sortingOrder = 21;
+        }
     }
 }

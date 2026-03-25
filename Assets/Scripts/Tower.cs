@@ -12,6 +12,7 @@ public class Tower : MonoBehaviour
     AudioSource audioSource;
     AudioClip laserSound;
     GameObject rangeCircle;
+    GameObject gunObj;
     float baseScale = 2.5f;
 
     Sprite GetCustomSprite()
@@ -52,7 +53,7 @@ public class Tower : MonoBehaviour
         var rangeSr = rangeCircle.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
         Color rc = data.color.ToColor();
-        rc.a = 0.08f;
+        rc.a = 0.05f; // Slightly lower alpha for better transparency
         rangeSr.color = rc;
         rangeSr.sortingOrder = 1;
         rangeCircle.transform.localScale = Vector3.one * (data.range * 2f / baseScale);
@@ -69,6 +70,8 @@ public class Tower : MonoBehaviour
         laserLine.positionCount = 0;
         laserLine.sortingOrder = 7;
 
+        SetupGun();
+
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
         audioSource.volume = 0.015f;
@@ -82,25 +85,28 @@ public class Tower : MonoBehaviour
     {
         fireTimer += Time.deltaTime;
 
+        EnemyMovement target = FindClosestEnemy();
+        if (target != null && gunObj != null)
+        {
+            Vector3 dir = target.transform.position - transform.position;
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+            gunObj.transform.rotation = Quaternion.AngleAxis(angle - 90f, Vector3.forward);
+        }
+
         float interval = 1f / data.fireRate;
         if (fireTimer >= interval)
         {
-            EnemyMovement target = FindClosestEnemy();
             if (target != null)
             {
                 target.TakeDamage(data.damage + (level - 1) * data.upgradeDamage);
-
                 if (data.slowAmount > 0)
                 {
                     float currentSlow = data.slowAmount + (level - 1) * data.upgradeSlowAmount;
                     target.ApplySlow(currentSlow, 0.5f);
                 }
-
                 ShowLaser(target.transform.position);
-
                 if (laserSound != null && audioSource != null)
                     audioSource.PlayOneShot(laserSound);
-
                 fireTimer = 0;
             }
         }
@@ -216,12 +222,43 @@ public class Tower : MonoBehaviour
                 float dx = (x - center) / center;
                 float dy = (y - center) / center;
                 float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                float alpha = Mathf.Clamp01((1f - dist) * 3f);
+                float alpha = Mathf.Max(0, (1f - dist)); // Smoother linear falloff
                 pixels[y * size + x] = new Color(1, 1, 1, alpha);
             }
         }
         tex.SetPixels(pixels);
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+    }
+
+    void SetupGun()
+    {
+        Sprite[] sprites = Resources.LoadAll<Sprite>("gun 1");
+        Sprite rawSprite = null;
+        foreach (var s in sprites)
+        {
+            if (s.name.Equals("gun 1_16", System.StringComparison.OrdinalIgnoreCase))
+            {
+                rawSprite = s;
+                break;
+            }
+        }
+
+        if (rawSprite != null)
+        {
+            Sprite gunSprite = Sprite.Create(rawSprite.texture, rawSprite.rect, new Vector2(0.5f, 0.5f), rawSprite.pixelsPerUnit);
+
+            gunObj = new GameObject("Gun");
+            gunObj.transform.parent = transform;
+            gunObj.transform.localPosition = new Vector3(0, 0, -0.1f);
+            
+            float gunScale = 1.5f;
+            gunObj.transform.localScale = Vector3.one * gunScale;
+            
+            var sr = gunObj.AddComponent<SpriteRenderer>();
+            sr.sprite = gunSprite;
+            sr.color = Color.white;
+            sr.sortingOrder = 11;
+        }
     }
 }
