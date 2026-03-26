@@ -3,10 +3,14 @@ using UnityEngine.UI;
 
 public class GameOverUI : MonoBehaviour
 {
+    public static GameOverUI instance;
     GameObject panel;
+    bool isDead = false;
 
     void Awake()
     {
+        instance = this;
+        isDead = false;
         BuildUI();
         panel.SetActive(false);
     }
@@ -14,6 +18,7 @@ public class GameOverUI : MonoBehaviour
     void BuildUI()
     {
         var canvas = new GameObject("GameOverCanvas");
+        canvas.transform.SetParent(transform);
         var c = canvas.AddComponent<Canvas>();
         c.renderMode = RenderMode.ScreenSpaceOverlay;
         c.sortingOrder = 300;
@@ -38,7 +43,7 @@ public class GameOverUI : MonoBehaviour
         CreateText(panel.transform, "the otters got through...", 24,
             new Vector2(0.5f, 0.55f), new Color(0.6f, 0.3f, 0.3f));
 
-        CreateButton(panel.transform, "RESTART", new Vector2(0.5f, 0.4f),
+        CreateButton(panel.transform, "START OVER", new Vector2(0.5f, 0.4f),
             new Vector2(260, 55), new Color(0.15f, 0.4f, 0.15f), () => RestartGame());
 
         CreateButton(panel.transform, "EXIT TO MENU", new Vector2(0.5f, 0.28f),
@@ -47,13 +52,16 @@ public class GameOverUI : MonoBehaviour
 
     public void Show()
     {
-        // freeze game, show death screen
-        panel.SetActive(true);
+        if (isDead) return;
+        isDead = true;
+        if (panel != null)
+            panel.SetActive(true);
         Time.timeScale = 0;
     }
 
     void RestartGame()
     {
+        isDead = false;
         Time.timeScale = 1;
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
@@ -61,6 +69,7 @@ public class GameOverUI : MonoBehaviour
 
     void ExitToMenu()
     {
+        isDead = false;
         Time.timeScale = 1;
         foreach (var vp in Object.FindObjectsByType<UnityEngine.Video.VideoPlayer>(FindObjectsSortMode.None))
             vp.Stop();

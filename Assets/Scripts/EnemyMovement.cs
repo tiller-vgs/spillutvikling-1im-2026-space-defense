@@ -57,6 +57,27 @@ public class EnemyMovement : MonoBehaviour
         reward = serverReward;
     }
 
+    public float GetCurrentHealth()
+    {
+        return currentHealth;
+    }
+
+    public float GetProgress()
+    {
+        if (waypoints == null || waypoints.Length == 0) return 0f;
+        float progress = currentWP;
+        if (currentWP < waypoints.Length)
+        {
+            float segDist = Vector3.Distance(waypoints[Mathf.Max(0, currentWP - 1)].position, waypoints[currentWP].position);
+            if (segDist > 0.01f)
+            {
+                float traveled = segDist - Vector3.Distance(transform.position, waypoints[currentWP].position);
+                progress += Mathf.Clamp01(traveled / segDist);
+            }
+        }
+        return progress;
+    }
+
     public void TakeDamage(float dmg)
     {
         currentHealth -= dmg;
@@ -135,7 +156,16 @@ public class EnemyMovement : MonoBehaviour
                 {
                     PlayerHealth ph = Object.FindFirstObjectByType<PlayerHealth>();
                     if (ph != null)
-                        ph.TakeDamage(10);
+                    {
+                        int dmg;
+                        if (maxHealth >= 400) dmg = 30;
+                        else if (maxHealth >= 130) dmg = 20;
+                        else if (maxHealth >= 100) dmg = 15;
+                        else if (maxHealth >= 60) dmg = 10;
+                        else if (maxHealth >= 45) dmg = 7;
+                        else dmg = 5;
+                        ph.TakeDamage(dmg);
+                    }
                 }
 
                 Destroy(gameObject);

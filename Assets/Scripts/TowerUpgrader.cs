@@ -9,6 +9,7 @@ public class TowerUpgrader : MonoBehaviour
     GameObject upgradePanel;
     static TowerUpgrader activePanel;
     bool justOpened = false;
+    Text targetModeText;
 
     void Start()
     {
@@ -70,18 +71,54 @@ public class TowerUpgrader : MonoBehaviour
         var bgImg = bg.AddComponent<Image>();
         bgImg.color = new Color(0.05f, 0.03f, 0.12f, 0.95f);
         var bgRect = bg.GetComponent<RectTransform>();
-        bgRect.anchoredPosition = new Vector2(canvasPos.x, canvasPos.y + 80);
-        bgRect.sizeDelta = new Vector2(200, 170);
+        bgRect.anchoredPosition = new Vector2(canvasPos.x, canvasPos.y + 100);
+        bgRect.sizeDelta = new Vector2(210, 230);
 
         CreateText(bg.transform, tower.data.name + " Lv." + tower.level + "/" + Tower.MAX_LEVEL, 15,
-            new Vector2(0, 65), Color.white);
+            new Vector2(0, 95), Color.white);
 
         CreateText(bg.transform, "DMG: " + tower.GetDamage(), 14,
-            new Vector2(0, 45), new Color(0.9f, 0.6f, 0.3f));
+            new Vector2(0, 75), new Color(0.9f, 0.6f, 0.3f));
 
         CreateText(bg.transform, "RNG: " + tower.data.range, 14,
-            new Vector2(0, 28), new Color(0.6f, 0.8f, 1f));
+            new Vector2(0, 58), new Color(0.6f, 0.8f, 1f));
 
+        // --- Target Selection ---
+        CreateText(bg.transform, "TARGET:", 12,
+            new Vector2(-35, 40), new Color(0.7f, 0.7f, 0.8f));
+
+        var targetBtnObj = new GameObject("TargetBtn");
+        targetBtnObj.transform.SetParent(bg.transform, false);
+        var targetBtnImg = targetBtnObj.AddComponent<Image>();
+        targetBtnImg.color = new Color(0.15f, 0.15f, 0.35f);
+        var targetBtn = targetBtnObj.AddComponent<Button>();
+        var targetColors = targetBtn.colors;
+        targetColors.highlightedColor = new Color(0.2f, 0.2f, 0.45f);
+        targetColors.pressedColor = new Color(0.1f, 0.1f, 0.25f);
+        targetBtn.colors = targetColors;
+        var targetBtnRect = targetBtnObj.GetComponent<RectTransform>();
+        targetBtnRect.anchoredPosition = new Vector2(40, 40);
+        targetBtnRect.sizeDelta = new Vector2(110, 22);
+
+        targetBtn.onClick.AddListener(() => CycleTarget());
+
+        var targetLabelObj = new GameObject("TargetLabel");
+        targetLabelObj.transform.SetParent(targetBtnObj.transform, false);
+        targetModeText = targetLabelObj.AddComponent<Text>();
+        targetModeText.text = "◆ " + tower.GetTargetModeLabel();
+        targetModeText.fontSize = 13;
+        targetModeText.fontStyle = FontStyle.Bold;
+        targetModeText.color = new Color(0.4f, 0.9f, 1f);
+        targetModeText.alignment = TextAnchor.MiddleCenter;
+        targetModeText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        targetModeText.horizontalOverflow = HorizontalWrapMode.Overflow;
+        var tmRect = targetLabelObj.GetComponent<RectTransform>();
+        tmRect.anchorMin = Vector2.zero;
+        tmRect.anchorMax = Vector2.one;
+        tmRect.offsetMin = Vector2.zero;
+        tmRect.offsetMax = Vector2.zero;
+
+        // --- Upgrade Button ---
         if (tower.CanUpgrade())
         {
             int cost = tower.GetUpgradeCost();
@@ -97,17 +134,18 @@ public class TowerUpgrader : MonoBehaviour
             colors.pressedColor = canAfford ? new Color(0.08f, 0.4f, 0.15f) : new Color(0.25f, 0.25f, 0.25f);
             btn.colors = colors;
             var btnRect = btnObj.GetComponent<RectTransform>();
-            btnRect.anchoredPosition = new Vector2(0, 2);
-            btnRect.sizeDelta = new Vector2(175, 35);
+            btnRect.anchoredPosition = new Vector2(0, 15);
+            btnRect.sizeDelta = new Vector2(185, 35);
 
             btn.onClick.AddListener(() => DoUpgrade());
             CreateText(btnObj.transform, "UPGRADE $" + cost, 15, Vector2.zero, Color.white);
         }
         else
         {
-            CreateText(bg.transform, "MAX LEVEL", 16, new Vector2(0, 2), new Color(1f, 0.85f, 0.2f));
+            CreateText(bg.transform, "MAX LEVEL", 16, new Vector2(0, 15), new Color(1f, 0.85f, 0.2f));
         }
 
+        // --- Sell Button ---
         int sellValue = tower.GetSellValue();
         var sellObj = new GameObject("SellBtn");
         sellObj.transform.SetParent(bg.transform, false);
@@ -120,11 +158,12 @@ public class TowerUpgrader : MonoBehaviour
         sellBtn.colors = sellColors;
         sellBtn.onClick.AddListener(() => SellTower());
         var sellRect = sellObj.GetComponent<RectTransform>();
-        sellRect.anchoredPosition = new Vector2(0, -35);
-        sellRect.sizeDelta = new Vector2(175, 35);
+        sellRect.anchoredPosition = new Vector2(0, -25);
+        sellRect.sizeDelta = new Vector2(185, 35);
 
         CreateText(sellObj.transform, "SELL $" + sellValue, 15, Vector2.zero, Color.white);
 
+        // --- Close Button ---
         var closeObj = new GameObject("CloseBtn");
         closeObj.transform.SetParent(bg.transform, false);
         var closeImg = closeObj.AddComponent<Image>();
@@ -135,10 +174,18 @@ public class TowerUpgrader : MonoBehaviour
         closeBtn.colors = closeColors;
         closeBtn.onClick.AddListener(() => HidePanel());
         var closeRect = closeObj.GetComponent<RectTransform>();
-        closeRect.anchoredPosition = new Vector2(85, 70);
+        closeRect.anchoredPosition = new Vector2(90, 100);
         closeRect.sizeDelta = new Vector2(28, 28);
 
         CreateText(closeObj.transform, "X", 14, Vector2.zero, Color.white);
+    }
+
+    void CycleTarget()
+    {
+        if (tower == null) return;
+        tower.CycleTargetMode();
+        if (targetModeText != null)
+            targetModeText.text = "◆ " + tower.GetTargetModeLabel();
     }
 
     void DoUpgrade()

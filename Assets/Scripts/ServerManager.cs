@@ -173,7 +173,12 @@ public class ServerManager : MonoBehaviour
         if (req.result == UnityWebRequest.Result.Success)
         {
             resp = JsonUtility.FromJson<EnemyLeakedResponse>(req.downloadHandler.text);
-            if (resp.ok) SyncHealth(resp.health);
+            if (resp.ok)
+            {
+                SyncHealth(resp.health);
+                if (resp.gameOver && GameOverUI.instance != null)
+                    GameOverUI.instance.Show();
+            }
         }
         callback?.Invoke(resp);
     }

@@ -1,12 +1,23 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+public enum TargetMode
+{
+    Closest,
+    Strongest,
+    MostHealth,
+    LeastHealth,
+    First,
+    Last
+}
+
 public class Tower : MonoBehaviour
 {
     public TowerData data;
     public int level = 1;
     public const int MAX_LEVEL = 5;
     public string serverTowerId = "";
+    public TargetMode targetMode = TargetMode.Closest;
     float fireTimer;
     LineRenderer laserLine;
     AudioSource audioSource;
@@ -53,7 +64,7 @@ public class Tower : MonoBehaviour
         var rangeSr = rangeCircle.AddComponent<SpriteRenderer>();
         rangeSr.sprite = MakeCircleSprite();
         Color rc = data.color.ToColor();
-        rc.a = 0.05f; // Slightly lower alpha for better transparency
+        rc.a = 0.05f;
         rangeSr.color = rc;
         rangeSr.sortingOrder = 1;
         rangeCircle.transform.localScale = Vector3.one * (data.range * 2f / baseScale);
@@ -85,7 +96,7 @@ public class Tower : MonoBehaviour
     {
         fireTimer += Time.deltaTime;
 
-        EnemyMovement target = FindClosestEnemy();
+        EnemyMovement target = FindEnemy();
         if (target != null && gunObj != null)
         {
             Vector3 dir = target.transform.position - transform.position;
@@ -98,7 +109,16 @@ public class Tower : MonoBehaviour
         {
             if (target != null)
             {
-                target.TakeDamage(data.damage + (level - 1) * data.upgradeDamage);
+                // Scale damage based on enemy size: bigger enemies take MORE damage, smaller take less
+                float baseDmg = data.damage + (level - 1) * data.upgradeDamage;
+                float enemyScale = target.transform.localScale.x;
+                float sizeMultiplier = 1f;
+                if (enemyScale > 2.5f) sizeMultiplier = 1.5f;       // big enemies take 50% more
+                else if (enemyScale > 1.5f) sizeMultiplier = 1.25f;  // medium-large take 25% more
+                else if (enemyScale < 0.8f) sizeMultiplier = 0.6f;   // tiny enemies take 40% less
+                else if (enemyScale < 1.2f) sizeMultiplier = 0.8f;   // small enemies take 20% less
+
+                target.TakeDamage(baseDmg * sizeMultiplier);
                 if (data.slowAmount > 0)
                 {
                     float currentSlow = data.slowAmount + (level - 1) * data.upgradeSlowAmount;
@@ -140,23 +160,47 @@ public class Tower : MonoBehaviour
         laserLine.endColor = ec;
     }
 
-    EnemyMovement FindClosestEnemy()
+    EnemyMovement FindEnemy()
     {
-        // simplistic distance check
         var enemies = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
-        EnemyMovement closest = null;
-        float closestDist = data.range;
+        EnemyMovement best = null;
+        float bestValue = 0f;
+        bool first = true;
 
         foreach (var e in enemies)
         {
             float dist = Vector3.Distance(transform.position, e.transform.position);
-            if (dist < closestDist)
+            if (dist > data.range) continue;
+
+            switch (targetMode)
             {
-                closestDist = dist;
-                closest = e;
+                case TargetMode.Closest:
+                    if (first || dist < bestValue) { best = e; bestValue = dist; }
+                    break;
+                case TargetMode.Strongest:
+                    float dmg = e.maxHealth;
+                    if (first || dmg > bestValue) { best = e; bestValue = dmg; }
+                    break;
+                case TargetMode.MostHealth:
+                    float hp = e.GetCurrentHealth();
+                    if (first || hp > bestValue) { best = e; bestValue = hp; }
+                    break;
+                case TargetMode.LeastHealth:
+                    float lhp = e.GetCurrentHealth();
+                    if (first || lhp < bestValue) { best = e; bestValue = lhp; }
+                    break;
+                case TargetMode.First:
+                    float prog = e.GetProgress();
+                    if (first || prog > bestValue) { best = e; bestValue = prog; }
+                    break;
+                case TargetMode.Last:
+                    float progL = e.GetProgress();
+                    if (first || progL < bestValue) { best = e; bestValue = progL; }
+                    break;
             }
+            first = false;
         }
-        return closest;
+        return best;
     }
 
     public bool CanUpgrade()
@@ -205,6 +249,26 @@ public class Tower : MonoBehaviour
     public int GetDamage()
     {
         return data.damage + (level - 1) * data.upgradeDamage;
+    }
+
+    public string GetTargetModeLabel()
+    {
+        switch (targetMode)
+        {
+            case TargetMode.Closest: return "Closest";
+            case TargetMode.Strongest: return "Strongest";
+            case TargetMode.MostHealth: return "Most HP";
+            case TargetMode.LeastHealth: return "Least HP";
+            case TargetMode.First: return "First";
+            case TargetMode.Last: return "Last";
+            default: return "Closest";
+        }
+    }
+
+    public void CycleTargetMode()
+    {
+        int next = ((int)targetMode + 1) % 6;
+        targetMode = (TargetMode)next;
     }
 
     Sprite MakeCircleSprite()
