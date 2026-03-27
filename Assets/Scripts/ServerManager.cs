@@ -4,6 +4,8 @@ using System;
 using System.Text;
 using System.Collections;
 
+// Alle HTTP kommunikasjon med Node.js Anti-Cheat-backend
+// Sikre at plassering, oppgraderinga og økonomiske handlinga blir validert på serversiden for å hindre cheats
 public class ServerManager : MonoBehaviour
 {
     public static ServerManager instance;
@@ -22,7 +24,7 @@ public class ServerManager : MonoBehaviour
         StartCoroutine(StartSession());
     }
 
-    // SESSION
+    // ØKT
 
     IEnumerator StartSession()
     {
@@ -53,6 +55,7 @@ public class ServerManager : MonoBehaviour
 
     // TOWER
 
+    // Starte en request om å plasser et nytt tårn regne penger synchronised ved suksess
     public void PlaceTower(string towerId, float x, float y, Action<TowerPlaceResponse> callback)
     {
         if (!connected) { callback?.Invoke(null); return; }
@@ -116,7 +119,7 @@ public class ServerManager : MonoBehaviour
         callback?.Invoke(resp);
     }
 
-    // ROUND
+    // RUNDE
 
     public void StartRound(Action<RoundStartResponse> callback)
     {
@@ -183,6 +186,7 @@ public class ServerManager : MonoBehaviour
         callback?.Invoke(resp);
     }
 
+    // Hjelpefunksjon for å unngå å gjenta konfigurasjonskode for UnityWebRequest
     UnityWebRequest PostRequest(string path, string jsonBody)
     {
         var req = new UnityWebRequest(serverUrl + path, "POST");

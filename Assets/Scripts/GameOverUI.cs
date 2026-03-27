@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+// Håndtere Game Over skjermen som vises når spillern e død
 public class GameOverUI : MonoBehaviour
 {
     public static GameOverUI instance;

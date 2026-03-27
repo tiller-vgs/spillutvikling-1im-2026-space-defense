@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Responsible for instantiating enemy GameObjects, assigning their visual sprites, and attaching their behavior scripts.
 public class EnemySpawner : MonoBehaviour
 {
     public EnemyPath path;
@@ -29,7 +30,7 @@ public class EnemySpawner : MonoBehaviour
 
         var sr = visuals.AddComponent<SpriteRenderer>();
 
-        Sprite[] sprites = Resources.LoadAll<Sprite>("OterSheet");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Assets/Image/OterSheet");
         Sprite enemySprite = null;
 
         if (sprites != null && sprites.Length > 0)
@@ -75,6 +76,7 @@ public class EnemySpawner : MonoBehaviour
             movement.serverEnemyId = serverId;
     }
 
+    // Hjelpefunksjon som generere en firkant sprite tekstur i reserve hvis ingen sprite blir funnet
     Sprite MakeSquareSprite()
     {
         int size = 32;

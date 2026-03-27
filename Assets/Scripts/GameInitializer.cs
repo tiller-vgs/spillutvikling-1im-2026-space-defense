@@ -9,6 +9,7 @@ public class GameInitializer : MonoBehaviour
 {
     static bool isRegistered = false;
 
+    // Sørger får at GameInitializer spawner automatisk så snart scenen lastes inn
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void RegisterSceneCallback()
     {
@@ -23,6 +24,7 @@ public class GameInitializer : MonoBehaviour
 
     void Awake() { }
 
+    // Main setup function Fjerne gamle objects, så lage den game world og UI
     public void DoInit()
     {
         SetupMusic();
@@ -116,7 +118,7 @@ public class GameInitializer : MonoBehaviour
         vp.isLooping = true;
         vp.renderMode = VideoRenderMode.APIOnly;
         vp.audioOutputMode = VideoAudioOutputMode.None;
-        vp.clip = Resources.Load<VideoClip>("GameBk");
+        vp.clip = Resources.Load<VideoClip>("Assets/Video/GameBk");
         
         vp.prepareCompleted += (p) => {
             rawImage.texture = p.texture;
@@ -128,6 +130,7 @@ public class GameInitializer : MonoBehaviour
 
 
 
+    // Definere punktan som skape stien fiendan følge mot basen
     void CreatePath()
     {
         Vector3[] positions = new Vector3[]
@@ -163,8 +166,8 @@ public class GameInitializer : MonoBehaviour
         }
         pathScript.waypoints = wps;
 
-        CreateDoor(positions[0], "SpawnDoor", -90f);
-        CreateDoor(positions[positions.Length - 1], "BaseDoor", 90f);
+        CreateDoor(positions[0] + new Vector3(-0.25f, 0, 0), "SpawnDoor", 90f);
+        CreateDoor(positions[positions.Length - 1] + new Vector3(0.25f, 0, 0), "BaseDoor", -90f);
     }
 
     void CreateDoor(Vector3 pos, string doorName, float rotationZ)
@@ -172,7 +175,7 @@ public class GameInitializer : MonoBehaviour
         var doorObj = new GameObject(doorName);
         doorObj.transform.position = pos;
         doorObj.transform.rotation = Quaternion.Euler(0, 0, rotationZ);
-        doorObj.transform.localScale = new Vector3(5f, 5f, 1f);
+        doorObj.transform.localScale = new Vector3(2.5f, 2.5f, 1f);
         doorObj.AddComponent<DoorAnimator>();
     }
 

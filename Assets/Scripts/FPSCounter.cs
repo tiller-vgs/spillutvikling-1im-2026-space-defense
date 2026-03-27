@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Et enkelt verktøy som vise FPS
 public class FPSCounter : MonoBehaviour
 {
     public static FPSCounter instance;

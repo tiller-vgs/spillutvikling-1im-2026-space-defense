@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Inneholder en liste med punkter som definerer fiendenes gangrute
 public class EnemyPath : MonoBehaviour
 {
     public Transform[] waypoints;
@@ -7,7 +8,7 @@ public class EnemyPath : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        // safety check
+        // sikkerhetssjekk
         if (waypoints == null || waypoints.Length < 2) return;
 
         for (int i = 0; i < waypoints.Length; i++)

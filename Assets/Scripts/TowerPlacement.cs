@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
+// Gjør den visuelle visningen og plassering te et nytt tårn sjekke får ugyldige plasseringa (som på stier elr andre tårn)
 public class TowerPlacement : MonoBehaviour
 {
     TowerData currentTower;
@@ -14,7 +15,7 @@ public class TowerPlacement : MonoBehaviour
 
     Sprite GetCustomSprite(string id)
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("tower_new 1");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Assets/Image/tower_new 1");
         string targetRef = "";
         
         switch (id)
@@ -223,7 +224,7 @@ public class TowerPlacement : MonoBehaviour
                 float dx = (x - center) / center;
                 float dy = (y - center) / center;
                 float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                float alpha = Mathf.Max(0, (1f - dist)); // Smoother linear falloff
+                float alpha = Mathf.Max(0, (1f - dist));
                 pixels[y * size + x] = new Color(1, 1, 1, alpha);
             }
         }
@@ -234,7 +235,7 @@ public class TowerPlacement : MonoBehaviour
 
     void SetupGunPreview()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("gun 1");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Assets/Image/gun 1");
         Sprite rawSprite = null;
         foreach (var s in sprites)
         {

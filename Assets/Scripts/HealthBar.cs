@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// En komponent festet til fiender for å tydelig vis fienden health ved hjelp av former
 public class HealthBar : MonoBehaviour
 {
     Transform bar;
@@ -56,7 +57,7 @@ public class HealthBar : MonoBehaviour
 
     Sprite MakeCleanSprite()
     {
-        // programmatic circle texture with soft edges
+        // kode sirkel med myke kanter
         int size = 64;
         var tex = new Texture2D(size, size);
         tex.filterMode = FilterMode.Bilinear;

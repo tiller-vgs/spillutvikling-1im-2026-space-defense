@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
+// Kontrollere spillet, bølgeprogresjon (waves), spawne fienda og bestemme når runden e ferdi
 public class RoundManager : MonoBehaviour
 {
     public static RoundManager instance;
@@ -14,7 +15,7 @@ public class RoundManager : MonoBehaviour
     int enemiesToSpawn = 0;
     float spawnTimer = 0;
 
-    // server enemy data for this round
+    // fiendedata fra server for den runden
     ServerManager.RoundEnemy[] serverEnemies;
     int serverEnemyIndex = 0;
 
@@ -179,6 +180,7 @@ public class RoundManager : MonoBehaviour
         return 6 + (round - 1) * 4;
     }
 
+    // Spawne gradvis vanskeligere kombinasjona based på runden vie på (rundenummer)
     string GetEnemyTypeForSpawn(int round, int index)
     {
         if (round >= 5 && round % 5 == 0 && index == enemiesToSpawn - 1)
@@ -230,6 +232,7 @@ public class RoundManager : MonoBehaviour
         return Mathf.Max(delay, 0.4f);
     }
 
+    // Skalerer opp otteran sin healthbar for å gjør hver runde mer utfordrende
     float GetHealthMultiplier(int round)
     {
         return 1f + (round - 1) * 0.22f;
@@ -296,8 +299,8 @@ public class RoundManager : MonoBehaviour
     {
         roundActive = false;
 
-        // only give local bonus if NOT connected to server
-        // (server already gave the bonus via enemy-killed responses)
+        // gi lokal bonus hvis ikke kobla te server
+        // (serveren har allerede gitt bonusen via enemy killed svar)
         if (ServerManager.instance == null || !ServerManager.instance.connected)
         {
             int bonus = 0;

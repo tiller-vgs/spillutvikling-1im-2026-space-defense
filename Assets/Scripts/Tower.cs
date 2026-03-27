@@ -11,6 +11,7 @@ public enum TargetMode
     Last
 }
 
+// Gjør spesifike ting av et plssert, inklu aiming, skyte laser, gjør damage, and tracking upgrades
 public class Tower : MonoBehaviour
 {
     public TowerData data;
@@ -28,7 +29,7 @@ public class Tower : MonoBehaviour
 
     Sprite GetCustomSprite()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("tower_new 1");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Assets/Image/tower_new 1");
         string targetRef = "";
         
         switch (data.id)
@@ -85,11 +86,19 @@ public class Tower : MonoBehaviour
 
         audioSource = gameObject.AddComponent<AudioSource>();
         audioSource.playOnAwake = false;
-        audioSource.volume = 0.015f;
         audioSource.pitch = 1.8f;
         audioSource.spatialBlend = 0f;
 
-        laserSound = Resources.Load<AudioClip>("Laserlyd");
+        if (data != null && data.id == "missile")
+        {
+            laserSound = Resources.Load<AudioClip>("Assets/Sound/bomb");
+            audioSource.volume = 0.05f;
+        }
+        else
+        {
+            laserSound = Resources.Load<AudioClip>("Assets/Sound/Laserlyd");
+            audioSource.volume = 0.015f;
+        }
     }
 
     void Update()
@@ -109,14 +118,14 @@ public class Tower : MonoBehaviour
         {
             if (target != null)
             {
-                // Scale damage based on enemy size: bigger enemies take MORE damage, smaller take less
+                // Skalere skade basert på fiendens størrelse, større fienda tar mer skade, mindre tar mindre
                 float baseDmg = data.damage + (level - 1) * data.upgradeDamage;
                 float enemyScale = target.transform.localScale.x;
                 float sizeMultiplier = 1f;
-                if (enemyScale > 2.5f) sizeMultiplier = 1.5f;       // big enemies take 50% more
-                else if (enemyScale > 1.5f) sizeMultiplier = 1.25f;  // medium-large take 25% more
-                else if (enemyScale < 0.8f) sizeMultiplier = 0.6f;   // tiny enemies take 40% less
-                else if (enemyScale < 1.2f) sizeMultiplier = 0.8f;   // small enemies take 20% less
+                if (enemyScale > 2.5f) sizeMultiplier = 1.5f;       // store fienda tar 50% mer
+                else if (enemyScale > 1.5f) sizeMultiplier = 1.25f;  // medium store tar 25% mer
+                else if (enemyScale < 0.8f) sizeMultiplier = 0.6f;   // veldi små fienda tar 40% mindre
+                else if (enemyScale < 1.2f) sizeMultiplier = 0.8f;   // små fienda tar 20% mindre
 
                 target.TakeDamage(baseDmg * sizeMultiplier);
                 if (data.slowAmount > 0)
@@ -160,6 +169,7 @@ public class Tower : MonoBehaviour
         laserLine.endColor = ec;
     }
 
+    // Skann alle aktive fienda innenfor rekkevidde og velge det beste målet basert på valgt targetMode strategi
     EnemyMovement FindEnemy()
     {
         var enemies = Object.FindObjectsByType<EnemyMovement>(FindObjectsSortMode.None);
@@ -286,7 +296,7 @@ public class Tower : MonoBehaviour
                 float dx = (x - center) / center;
                 float dy = (y - center) / center;
                 float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                float alpha = Mathf.Max(0, (1f - dist)); // Smoother linear falloff
+                float alpha = Mathf.Max(0, (1f - dist));
                 pixels[y * size + x] = new Color(1, 1, 1, alpha);
             }
         }
@@ -297,7 +307,7 @@ public class Tower : MonoBehaviour
 
     void SetupGun()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("gun 1");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Assets/Image/gun 1");
         Sprite rawSprite = null;
         foreach (var s in sprites)
         {

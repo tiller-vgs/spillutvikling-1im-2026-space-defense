@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.Video;
 
+// Gjør pause menyen og innstillinger i spillet.
 public class PauseMenu : MonoBehaviour
 {
     GameObject pauseButton;
@@ -334,7 +335,7 @@ public class PauseMenu : MonoBehaviour
 
     void TogglePause()
     {
-        // basic pause toggle logic
+        // Spillets tidsskala mellom 1 og 0 mens menyen vises
         if (isPaused) Resume();
         else Pause();
     }

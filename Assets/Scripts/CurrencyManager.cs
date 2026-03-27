@@ -5,7 +5,7 @@ public class CurrencyManager : MonoBehaviour
 {
     public static CurrencyManager instance;
     
-    public int dollars = 255;
+    public int dollars = 255; // Spiller start pæng
 
     Text dollarText;
 
@@ -62,6 +62,7 @@ public class CurrencyManager : MonoBehaviour
         UpdateDisplay();
     }
 
+    // Prøver å ta penger. Return false hvis spiller ikke har spenn
     public bool SpendMoney(int amount)
     {
         if (dollars < amount) return false;

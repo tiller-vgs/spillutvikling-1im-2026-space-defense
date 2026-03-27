@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// kontrollere enemy pathfinding, health tracking, speed adjustments (som slow effects), og death events
 public class EnemyMovement : MonoBehaviour
 {
     public float speed = 3f;
@@ -62,6 +63,7 @@ public class EnemyMovement : MonoBehaviour
         return currentHealth;
     }
 
+    // Beregner nøyaktig kor langt langs stien den fienden har reist
     public float GetProgress()
     {
         if (waypoints == null || waypoints.Length == 0) return 0f;
@@ -140,6 +142,7 @@ public class EnemyMovement : MonoBehaviour
 
         transform.position = Vector3.MoveTowards(transform.position, target.position, speed * slowFactor * Time.deltaTime);
 
+        // Sjekk om fienden nådde et punkt, ås hvis det er det siste, gi skade på spiller base
         if (Vector3.Distance(transform.position, target.position) < 0.05f)
         {
             currentWP++;

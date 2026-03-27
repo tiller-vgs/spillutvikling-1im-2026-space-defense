@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Hjelpeklasse som lagring og lasting av spillinnstillinga ved bruk av PlayerPrefs
 public static class SettingsManager
 {
     public static bool fpsCapped = true;
@@ -32,7 +33,7 @@ public static class SettingsManager
 
     public static void ApplyFPS()
     {
-        // vsync må vær av for at target frame rate ska funk
+        // vsync må vær av for at target frame rate ska funger
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = fpsCapped ? fpsCap : -1;
         Save();

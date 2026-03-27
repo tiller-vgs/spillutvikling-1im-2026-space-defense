@@ -31,6 +31,7 @@ public class TowerDataList
     public TowerData[] towers;
 }
 
+// Laste inn og tårnstatistikk fra en JSON fil får å fyll ut butikk og placement info
 public class TowerDatabase : MonoBehaviour
 {
     public static TowerDatabase instance;
@@ -52,7 +53,7 @@ public class TowerDatabase : MonoBehaviour
 
     public TowerData GetTower(string id)
     {
-        // fast lookup
+        // rask oppslag
         if (towerDict.ContainsKey(id)) return towerDict[id];
         return null;
     }

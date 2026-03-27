@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Dekro script som bruke Perlin for å få bakgrunnsstjerna te å kom inn og ut
 public class StarTwinkle : MonoBehaviour
 {
     void Update()

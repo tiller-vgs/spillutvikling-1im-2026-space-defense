@@ -97,6 +97,7 @@ public class PlayerHealth : MonoBehaviour
         shadow.effectDistance = new Vector2(1, -1);
     }
 
+    // Trekke fra liv og vise Game Over skjermen hvis due død
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
@@ -121,6 +122,7 @@ public class PlayerHealth : MonoBehaviour
         }
     }
 
+    // Oppdatere den visuelle grønn gul rød healthbar og teksten på skjermen
     void RefreshUI()
     {
         float fill = (float)currentHealth / maxHealth;

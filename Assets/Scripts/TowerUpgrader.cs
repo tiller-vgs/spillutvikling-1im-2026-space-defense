@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+// UI script festa te hvert plasserte tårn som lar spillern klikk på det får å oppgrader, selg elr endre target
 public class TowerUpgrader : MonoBehaviour
 {
     Tower tower;
@@ -83,9 +84,9 @@ public class TowerUpgrader : MonoBehaviour
         CreateText(bg.transform, "RNG: " + tower.data.range, 14,
             new Vector2(0, 58), new Color(0.6f, 0.8f, 1f));
 
-        // --- Target Selection ---
+        // --- Målvalg ---
         CreateText(bg.transform, "TARGET:", 12,
-            new Vector2(-35, 40), new Color(0.7f, 0.7f, 0.8f));
+            new Vector2(-45, 30), new Color(0.7f, 0.7f, 0.8f));
 
         var targetBtnObj = new GameObject("TargetBtn");
         targetBtnObj.transform.SetParent(bg.transform, false);
@@ -97,7 +98,7 @@ public class TowerUpgrader : MonoBehaviour
         targetColors.pressedColor = new Color(0.1f, 0.1f, 0.25f);
         targetBtn.colors = targetColors;
         var targetBtnRect = targetBtnObj.GetComponent<RectTransform>();
-        targetBtnRect.anchoredPosition = new Vector2(40, 40);
+        targetBtnRect.anchoredPosition = new Vector2(50, 30);
         targetBtnRect.sizeDelta = new Vector2(110, 22);
 
         targetBtn.onClick.AddListener(() => CycleTarget());
@@ -118,7 +119,7 @@ public class TowerUpgrader : MonoBehaviour
         tmRect.offsetMin = Vector2.zero;
         tmRect.offsetMax = Vector2.zero;
 
-        // --- Upgrade Button ---
+        // --- Oppgraderingsknapp ---
         if (tower.CanUpgrade())
         {
             int cost = tower.GetUpgradeCost();
@@ -134,7 +135,7 @@ public class TowerUpgrader : MonoBehaviour
             colors.pressedColor = canAfford ? new Color(0.08f, 0.4f, 0.15f) : new Color(0.25f, 0.25f, 0.25f);
             btn.colors = colors;
             var btnRect = btnObj.GetComponent<RectTransform>();
-            btnRect.anchoredPosition = new Vector2(0, 15);
+            btnRect.anchoredPosition = new Vector2(0, 0);
             btnRect.sizeDelta = new Vector2(185, 35);
 
             btn.onClick.AddListener(() => DoUpgrade());
@@ -145,7 +146,7 @@ public class TowerUpgrader : MonoBehaviour
             CreateText(bg.transform, "MAX LEVEL", 16, new Vector2(0, 15), new Color(1f, 0.85f, 0.2f));
         }
 
-        // --- Sell Button ---
+        // --- Salgsknapp ---
         int sellValue = tower.GetSellValue();
         var sellObj = new GameObject("SellBtn");
         sellObj.transform.SetParent(bg.transform, false);
@@ -158,12 +159,12 @@ public class TowerUpgrader : MonoBehaviour
         sellBtn.colors = sellColors;
         sellBtn.onClick.AddListener(() => SellTower());
         var sellRect = sellObj.GetComponent<RectTransform>();
-        sellRect.anchoredPosition = new Vector2(0, -25);
+        sellRect.anchoredPosition = new Vector2(0, -40);
         sellRect.sizeDelta = new Vector2(185, 35);
 
         CreateText(sellObj.transform, "SELL $" + sellValue, 15, Vector2.zero, Color.white);
 
-        // --- Close Button ---
+        // --- Lukkeknapp ---
         var closeObj = new GameObject("CloseBtn");
         closeObj.transform.SetParent(bg.transform, false);
         var closeImg = closeObj.AddComponent<Image>();

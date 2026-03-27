@@ -25,6 +25,7 @@ public class EnemyDataList
     public EnemyData[] enemies;
 }
 
+// Laster inn og lagre fiendestats og data fra JSON fil sånn at det er tilgjengelig i hele spillet
 public class EnemyDatabase : MonoBehaviour
 {
     public static EnemyDatabase instance;
@@ -43,7 +44,7 @@ public class EnemyDatabase : MonoBehaviour
 
     public EnemyData GetEnemy(string id)
     {
-        // søk etter matching enemy id, fallback til første
+        // søk etter matching enemy id fallback te første
         foreach (var e in enemies)
             if (e.id == id) return e;
             

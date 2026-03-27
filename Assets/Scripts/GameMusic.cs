@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// Kontrollere bakgrunnsmusikk og overlever sceneinnlastingam lytte te SettingsManager for volum
 public class GameMusic : MonoBehaviour
 {
     public static GameMusic instance;
@@ -29,12 +30,12 @@ public class GameMusic : MonoBehaviour
 
     public void PlayMenuMusic()
     {
-        PlayClip("menumusic");
+        PlayClip("Assets/Sound/menumusic");
     }
 
     public void PlayGameMusic()
     {
-        PlayClip("Spilllot");
+        PlayClip("Assets/Sound/Spilllot");
     }
 
     void PlayClip(string clipName)

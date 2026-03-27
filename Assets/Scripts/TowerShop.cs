@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
+// Generere og gjør butikkmenyen på skjermen dær spillern velge hvilke tårn som ska kjøpes og plasseres
 public class TowerShop : MonoBehaviour
 {
     public static TowerShop instance;
@@ -176,7 +177,7 @@ public class TowerShop : MonoBehaviour
         TowerData t = TowerDatabase.instance.GetTower(id);
         if (t == null) return;
 
-        // sjekk om du har nokk pæng
+        // Sjekker om spilleren har nok penger til å kjøpe dette tårnet før plassering tillates
         if (CurrencyManager.instance != null && CurrencyManager.instance.dollars < t.cost)
         {
             if (selectedLabel != null)

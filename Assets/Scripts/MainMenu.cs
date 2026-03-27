@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 using UnityEngine.SceneManagement;
 
+// Håndterer brukerinnstillinger (volum, fps, etc) og mesteparten av UIen
 public class MainMenu : MonoBehaviour
 {
     GameObject menuPanel;
@@ -15,6 +16,11 @@ public class MainMenu : MonoBehaviour
     void Start()
     {
         SettingsManager.Load();
+        if (GameMusic.instance != null)
+        {
+            GameMusic.instance.SetVolume(SettingsManager.musicVolume);
+            GameMusic.instance.SetMusic(SettingsManager.musicOn);
+        }
         SettingsManager.ApplyFPS();
         Time.timeScale = 0;
         BuildMenuUI();
@@ -41,6 +47,7 @@ public class MainMenu : MonoBehaviour
         SettingsManager.ApplyFPSCounter();
     }
 
+    // Generere hele hovedmenyen uten å være avhengig av Unity Scene prefabs
     void BuildMenuUI()
     {
         var canvas = new GameObject("MenuCanvas");
@@ -69,7 +76,7 @@ public class MainMenu : MonoBehaviour
         videoPlayer.renderMode = VideoRenderMode.APIOnly;
         videoPlayer.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
         videoPlayer.audioOutputMode = VideoAudioOutputMode.None;
-        videoPlayer.clip = Resources.Load<VideoClip>("main_menu_background");
+        videoPlayer.clip = Resources.Load<VideoClip>("Assets/Video/main_menu_background");
         videoPlayer.prepareCompleted += (p) => {
             bgImage.texture = p.texture;
             bgImage.color = Color.white;
@@ -90,7 +97,7 @@ public class MainMenu : MonoBehaviour
         var logoImg = logoObj.AddComponent<Image>();
         logoImg.preserveAspect = true;
         logoImg.type = Image.Type.Simple;
-        var logoSprite = Resources.Load<Sprite>("namelogo");
+        var logoSprite = Resources.Load<Sprite>("Assets/Image/namelogo");
         if (logoSprite != null)
             logoImg.sprite = logoSprite;
 
